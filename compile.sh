@@ -8,6 +8,10 @@ else
 	gcc -Ofast -c $(ls *.c)
 fi
 
+if (($? != 0)); then
+	exit 1
+fi
+
 if [ ! -d obj_files/ ]; then
 	mkdir obj_files/
 fi
