@@ -3,7 +3,6 @@
 //write tree test to file for large testing samples
 
 extern Dict words;
-extern DataA *answers_data;
 
 void test(){
 	char word[6];

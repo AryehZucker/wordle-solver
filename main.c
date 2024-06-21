@@ -3,7 +3,6 @@
 
 
 Dict words;
-extern DataA *answers_data;
 
 
 
