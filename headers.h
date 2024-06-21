@@ -79,10 +79,11 @@ void wordToData(const char *word, DataA *data);
 void genDataTable(const char *ans, WordList guesses, DataS table[]);
 void genData(const char *guess, const char *ans, DataS *data);
 
-int getComboElims(DataS *data1, DataS *data2, DataA *answers_data, Node *tree[]);
+int getComboElims(DataS *data1, DataS *data2, Node *tree[]);
 void combine(const DataS *data1, const DataS *data2, DataC *combo_data);
 int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]);
-int countElims(DataC *data, DataA *answers_data);
+void init_ans_data(void);
+int countElims(const DataC *data);
 int fits(const DataC *data, const DataA *ans_data);
 
 void simplify(DataL *letter_data, const int data_len);
@@ -90,14 +91,14 @@ void hashData(const DataC *data, unsigned int *buffer);
 
 int weight(int bitstr);
 
-void calcElims(Dict words, double *total_elims, int test);
+void calcElims(double *total_elims, int test);
 
-void initDiagnostics(Dict words);
-void clearDiagnostics(void);
+void initLogging();
+void clearLogging(void);
 void timeStart(void);
 void timeEnd(int mode);
 void logLookup(int success);
-void printDiagnostics();
+void printLogging();
 
 void setSaveFile(const char *path);
 int loadProgress(Node *tree[]);
@@ -109,6 +110,6 @@ void printDataS(const DataS *data, FILE *fp);
 void saveTree(Node *tree[]);
 void printTree(Node *node, FILE *fp);
 
-void test(Dict words);
+void test();
 void testSimplify(DataS *data);
-void testElimsTable(Dict words, DataA *ans_data);
+void testElimsTable(void);

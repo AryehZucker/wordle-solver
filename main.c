@@ -2,12 +2,15 @@
 
 
 
+Dict words;
+extern DataA *answers_data;
+
+
 
 int main(int argc, char *argv[]){
 	int arg = 1; //skip past the name of the prog
 	int t = 0; //test bool
 
-	Dict words;
 	double *total_elims;
 
 	int best_words[100];
@@ -33,10 +36,10 @@ int main(int argc, char *argv[]){
 	total_elims = (double *) malloc(words.guesses.len * sizeof (double));
 	for(int i=0; i<words.guesses.len; i++) total_elims[i] = 0;
 
-	if(t) test(words); //test
+	if(t) test(); //test
 
 	printf("Calculating eliminations...");
-	calcElims(words, total_elims, t);
+	calcElims(total_elims, t);
 	printf("Done\n");
 
 	//DEBUG
@@ -85,10 +88,9 @@ int main(int argc, char *argv[]){
 
 
 
-void calcElims(Dict words, double *total_elims, int test){
+void calcElims(double *total_elims, int test){
 	char current_letter = '\0';
 	char *ans;
-	DataA *ans_data;
 	DataS *data_table;
 	Node *e_tree[5+1];
 	int elims;
@@ -96,10 +98,7 @@ void calcElims(Dict words, double *total_elims, int test){
 	printf("\n");
 
 	//initialize word-to-data table
-	ans_data = (DataA *) malloc((words.answers.len+1) * sizeof (DataA));
-	for(int i=0; i<words.answers.len; i++)
-		wordToData(getWord(i, words.answers), &ans_data[i]);
-	ans_data[words.answers.len].letters = 0;
+	init_ans_data();
 	printf("Answer to data table initialized.\n");
 
 	data_table = (DataS *) malloc(words.guesses.len * sizeof (DataS));
@@ -108,10 +107,10 @@ void calcElims(Dict words, double *total_elims, int test){
 	for(int i=0; i<=5; i++) e_tree[i] = NULL;
 	printf("Elims tree initialized.\n");
 
-	if(test) testElimsTable(words, ans_data); //test
+	if(test) testElimsTable(); //test
 
 	printf("Beginning combinatorical calculations...\n");
-	initDiagnostics(words); //diagnostics
+	initLogging(); //logging
 	for(int ans_index = loadProgress(e_tree); ans_index < words.answers.len; ans_index++){
 		ans = getWord(ans_index, words.answers);
 		if(current_letter != ans[0]){
@@ -122,19 +121,19 @@ void calcElims(Dict words, double *total_elims, int test){
 		genDataTable(ans, words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
-				timeStart(); //diagnostics
-				elims = getComboElims(data_table+g1_index, data_table+g2_index, ans_data, e_tree);
+				timeStart(); //logging
+				elims = getComboElims(data_table+g1_index, data_table+g2_index, e_tree);
 				total_elims[g1_index] += elims;
 				total_elims[g2_index] += elims;
 			}
-			printDiagnostics(); //diagnostics
+			printLogging(); //logging
 		}
 
 		saveProgress(e_tree);
 
                 //for(int i=0; i<5; i++) putchar(ans[i]);
                 //putchar('\n');
-		clearDiagnostics(); //diagnostics
+		clearLogging(); //logging
 	}
 
 	saveTree(e_tree); //DEBUG

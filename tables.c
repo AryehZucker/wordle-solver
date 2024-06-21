@@ -30,7 +30,8 @@
 #include "headers.h"
 
 
-
+extern Dict words;
+DataA *answers_data;
 
 void wordToData(const char *word, DataA *data){
 	static DataLA letter_data[26];
@@ -122,23 +123,23 @@ void genData(const char *guess, const char *ans, DataS *data){
 
 
 
-int getComboElims(DataS *data1, DataS *data2, DataA *answers_data, Node *tree[]){
+int getComboElims(DataS *data1, DataS *data2, Node *tree[]){
 	int *elimsptr;
 	static unsigned int data_hash[HASH_LEN];
 	DataC combo_data;
 
 	combine(data1, data2, &combo_data);
         hashData(&combo_data, data_hash);
-        timeEnd(INIT); //diagnostics
+        timeEnd(INIT); //logging
 
 	elimsptr = searchTree(data_hash, weight(combo_data.letters), tree);
-	timeEnd(SEARCH); //diagnostics
-	logLookup(*elimsptr != EMPTY); //diagnostics
+	timeEnd(SEARCH); //logging
+	logLookup(*elimsptr != EMPTY); //logging
 
 	if(*elimsptr == EMPTY)	//no entry for this data
-		*elimsptr = countElims(&combo_data, answers_data);
+		*elimsptr = countElims(&combo_data);
 
-	timeEnd(COUNT); //diagnostics
+	timeEnd(COUNT); //logging
 
 	return *elimsptr;
 }
@@ -210,13 +211,21 @@ int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]){
 
 
 
-int countElims(DataC *data, DataA *answer_data){
-	int elims = 0;
-	while(answer_data->letters){
-		if(!fits(data, answer_data++))
-			elims++;
+void init_ans_data(){
+	answers_data = (DataA *) malloc((words.answers.len+1) * sizeof (DataA));
+	for(int i=0; i<words.answers.len; i++)
+		wordToData(getWord(i, words.answers), &answers_data[i]);
+	answers_data[words.answers.len].letters = 0;
+}
+
+int countElims(const DataC *data){
+	DataA *ans_data = answers_data;
+	int good_words = 0;
+	while(ans_data->letters){
+		if(fits(data, ans_data++))
+			good_words++;
 	}
-	return elims;
+	return (words.answers.len - good_words);
 }
 
 

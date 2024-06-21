@@ -2,7 +2,10 @@
 
 //write tree test to file for large testing samples
 
-void test(Dict words){
+extern Dict words;
+extern DataA *answers_data;
+
+void test(){
 	char word[6];
 	word[5] = '\0';
 	int n;
@@ -112,7 +115,7 @@ void testSimplify(DataS *data){
 
 }
 
-void testElimsTable(Dict words, DataA *ans_data){
+void testElimsTable(){
 	long trials = 10000;
 	FILE *outfile;
 	char *ans, word[6];
@@ -142,9 +145,9 @@ void testElimsTable(Dict words, DataA *ans_data){
 		fprintf(outfile, "Guess 2: %s\n", word);
 		printDataS(d_table+g2, outfile);
 		//find combo elims
-		elims = getComboElims(d_table+g1, d_table+g2, ans_data, e_tree);
+		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
 		fprintf(outfile, "Total elims (call 1): %d\n", elims);
-		elims = getComboElims(d_table+g1, d_table+g2, ans_data, e_tree);
+		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
 		fprintf(outfile, "Total elims (call 2): %d\n", elims);
 		fprintf(outfile, "\n");
 	}
