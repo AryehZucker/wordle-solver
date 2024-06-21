@@ -129,8 +129,8 @@ int getComboElims(DataS *data1, DataS *data2, Node *tree[]){
 	DataC combo_data;
 
 	combine(data1, data2, &combo_data);
-        hashData(&combo_data, data_hash);
-        timeEnd(INIT); //logging
+	hashData(&combo_data, data_hash);
+	timeEnd(INIT); //logging
 
 	elimsptr = searchTree(data_hash, weight(combo_data.letters), tree);
 	timeEnd(SEARCH); //logging
@@ -220,12 +220,12 @@ void init_ans_data(){
 
 int countElims(const DataC *data){
 	DataA *ans_data = answers_data;
-	int good_words = 0;
+	int elims = 0;
 	while(ans_data->letters){
-		if(fits(data, ans_data++))
-			good_words++;
+		if(!fits(data, ans_data++))
+			elims++;
 	}
-	return (words.answers.len - good_words);
+	return elims;
 }
 
 
