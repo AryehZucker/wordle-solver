@@ -9,6 +9,7 @@ else
 fi
 
 if (($? != 0)); then
+	rm -v *.o
 	exit 1
 fi
 
