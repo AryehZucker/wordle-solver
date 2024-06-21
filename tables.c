@@ -209,6 +209,21 @@ int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]){
 }
 
 
+void freeNode(Node *node){
+	if(node == NULL)
+		return;
+	
+	freeNode(node->left);
+	freeNode(node->right);
+	free(node);
+}
+
+void freeTree(Node *tree[], int size){
+	for(int i=0; i<size; i++)
+		freeNode(tree[i]);
+}
+
+
 
 
 void init_ans_data(){
@@ -216,6 +231,10 @@ void init_ans_data(){
 	for(int i=0; i<words.answers.len; i++)
 		wordToData(getWord(i, words.answers), &answers_data[i]);
 	answers_data[words.answers.len].letters = 0;
+}
+
+void free_ans_data(){
+	free(answers_data);
 }
 
 int countElims(const DataC *data){

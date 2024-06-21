@@ -1,8 +1,6 @@
 TODO:
-- change the DataA array into an array or linked list of data sorted by which letters they contain. the array should be 2D, the first level/dim should be the letters, and the second the letter_data. this way groups of answers can be eliminated by only looking at one.
 - make the program save its work before quitting, and load saved work on startup (write loadProgress and saveProgress functions)
 - optimize keeping track of a change in simplify (low priority)
 - (convert data structures to 'int')
-- free all malloced storage (remove the data leak)
 - see if data lookup can be sped up with a hash table
 - write my own getMem method to allocate memory gotten from malloc

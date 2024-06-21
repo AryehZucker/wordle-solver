@@ -80,6 +80,10 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Error saving data :(\n");
 	else
 		printf("Done\n");
+	
+	//free all malloced memory
+	free(total_elims);
+	free_ans_data();
 
 	return 0;
 }
@@ -138,4 +142,8 @@ void calcElims(double *total_elims, int test){
 	saveTree(e_tree); //DEBUG
 
 	printf("\n");
+	
+	//free all malloced
+	free(data_table);
+	freeTree(e_tree, sizeof(e_tree)/sizeof(Node *));
 }

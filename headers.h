@@ -82,7 +82,10 @@ void genData(const char *guess, const char *ans, DataS *data);
 int getComboElims(DataS *data1, DataS *data2, Node *tree[]);
 void combine(const DataS *data1, const DataS *data2, DataC *combo_data);
 int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]);
+void freeTree(Node *tree[], int size);
+
 void init_ans_data(void);
+void free_ans_data(void);
 int countElims(const DataC *data);
 int fits(const DataC *data, const DataA *ans_data);
 

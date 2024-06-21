@@ -121,8 +121,8 @@ void testElimsTable(){
 	int g1, g2, elims;
 	word[5] = '\0';
 	DataS *d_table = malloc(words.guesses.len * sizeof (DataS));
-	Node *e_tree[11];
-	for(int i=0; i<11; i++) e_tree[i] = NULL;
+	Node *e_tree[5+1];
+	for(int i=0; i<5+1; i++) e_tree[i] = NULL;
 
 	printf("\n\nTesting elims table...\n\n");
 
@@ -153,7 +153,7 @@ void testElimsTable(){
 
 	fclose(outfile);
 	free(d_table);
-	//i know that i'm leaving the whole tree floating out in memory, but i don't care
+	freeTree(e_tree, 6);
 
 	printf("Save tree? ");
 	if(getchar() == 'y') saveTree(e_tree);
