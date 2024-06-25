@@ -25,13 +25,13 @@ int main(int argc, char *argv[]){
 	arg += 2;
 	if(words.guesses.len < 0 || words.answers.len < 0){
 		fprintf(stderr, "Error loading word lists\n");
-		return -1;
+		return 1;
 	}
 
 	if(arg < argc){
 		if(setSaveFile(argv[arg++]) < 0){
 			fprintf(stderr, "Error setting save path\n");
-			return -1;
+			return 1;
 		}
 	}
 
@@ -46,9 +46,9 @@ int main(int argc, char *argv[]){
 
 	//DEBUG
 	//output each word and its elims
-	for(int i=0; i<words.guesses.len; i++){
-		printf("%s: %.0f\n", getWord(i, words.guesses), total_elims[i]);
-	}
+	//for(int i=0; i<words.guesses.len; i++){
+	//	printf("%s: %.0f\n", getWord(i, words.guesses), total_elims[i]);
+	//}
 
 	printf("Finding best words...");
 	most_elims = 0;
