@@ -28,11 +28,15 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
-	if(arg < argc) setSaveFile(argv[arg++]);
+	if(arg < argc){
+		if(setSaveFile(argv[arg++]) < 0){
+			fprintf(stderr, "Error setting save path\n");
+			return -1;
+		}
+	}
 
 	//allot space to store the total eliminations and initialize to zero
-	total_elims = (double *) malloc(words.guesses.len * sizeof (double));
-	for(int i=0; i<words.guesses.len; i++) total_elims[i] = 0;
+	total_elims = (double *) calloc(words.guesses.len, sizeof (double));
 
 	if(testing) test(); //test
 
@@ -53,7 +57,7 @@ int main(int argc, char *argv[]){
 			most_elims = total_elims[i];
 
 	int j = 0;
-	for(int i=0; i<words.guesses.len && j<100; i++)
+	for(int i=0; i<words.guesses.len && j<(sizeof(best_words)/sizeof(int)); i++)
 		if(total_elims[i] == most_elims)
 			best_words[j++] = i;
 	best_words[j] = -1; //mark end of list
@@ -88,7 +92,7 @@ void calcElims(double *total_elims){
 	char current_letter = '\0';
 	char *ans;
 	DataS *data_table;
-	Node *e_tree[5+1];
+	Node *elims_tree[5+1];
 	int elims;
 
 	printf("\n");
@@ -100,14 +104,20 @@ void calcElims(double *total_elims){
 	data_table = (DataS *) malloc(words.guesses.len * sizeof (DataS));
 	printf("Data table initialized.\n");
 
-	for(int i=0; i<=5; i++) e_tree[i] = NULL;
+	for(int i=0; i<=5; i++) elims_tree[i] = NULL;
 	printf("Elims tree initialized.\n");
 
 	if(testing) testElimsTable(); //test
+	
+	printf("Loading stored progress...\n");
+	struct prog p = loadProgress(total_elims, elims_tree);
+	int ans_index = p.answer;
+	int g1_index = p.guess1;
+	printf("Done\n");
 
 	printf("Beginning combinatorical calculations...\n");
 	initLogging(); //logging
-	for(int ans_index = loadProgress(e_tree); ans_index < words.answers.len; ans_index++){
+	for(; ans_index < words.answers.len; ans_index++){
 		ans = getWord(ans_index, words.answers);
 		if(current_letter != ans[0]){
 			current_letter = ans[0];
@@ -115,28 +125,24 @@ void calcElims(double *total_elims){
 		}
 
 		genDataTable(ans, words.guesses, data_table);
-		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
+		for(; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
 				timeStart(); //logging
-				elims = getComboElims(data_table+g1_index, data_table+g2_index, e_tree);
+				elims = getComboElims(data_table+g1_index, data_table+g2_index, elims_tree);
 				total_elims[g1_index] += elims;
 				total_elims[g2_index] += elims;
 			}
 			printLogging(); //logging
 		}
+		g1_index = 0;
 
-		saveProgress(e_tree);
-
-                //for(int i=0; i<5; i++) putchar(ans[i]);
-                //putchar('\n');
-		clearLogging(); //logging
+		saveProgress(ans_index, g1_index, total_elims, elims_tree);
+		clearLoggingLookups(); //logging
 	}
-
-	saveTree(e_tree); //DEBUG
 
 	printf("\n");
 	
 	//free all malloced
 	free(data_table);
-	freeTree(e_tree, sizeof(e_tree)/sizeof(Node *));
+	freeTree(elims_tree, sizeof(elims_tree)/sizeof(Node *));
 }

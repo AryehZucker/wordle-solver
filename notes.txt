@@ -4,3 +4,4 @@ TODO:
 - (convert data structures to 'int')
 - see if data lookup can be sped up with a hash table
 - write my own getMem method to allocate memory gotten from malloc
+- shuffle the wordslists to avoid worst case scenarios

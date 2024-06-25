@@ -73,6 +73,11 @@ struct node{
 typedef struct node Node;
 
 
+struct prog {
+	int answer, guess1;
+};
+
+
 void loadDict(const char *ans_words_path, const char *guess_words_path);
 WordList loadWordList(const char *path);
 char *getWord(int index, WordList wl);
@@ -100,15 +105,15 @@ int weight(int bitstr);
 void calcElims(double *total_elims);
 
 void initLogging();
-void clearLogging(void);
+void clearLoggingLookups(void);
 void timeStart(void);
 void timeEnd(int mode);
 void logLookup(int success);
 void printLogging();
 
-void setSaveFile(const char *path);
-int loadProgress(Node *tree[]);
-void saveProgress(Node *tree[]);
+int setSaveFile(const char *path);
+struct prog loadProgress(double *total_elims, Node *tree[]);
+void saveProgress(int answer, int guess1, double *total_elims, Node *tree[]);
 int saveData(double *data, int len);
 void showDataA(const char *word, const DataA *data);
 void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp);

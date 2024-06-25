@@ -12,7 +12,6 @@ struct stat {
 } logging;
 
 void initLogging(){
-	extern struct stat logging;
 	logging.total_runs = (long double) words.answers.len * words.guesses.len * (words.guesses.len-1) / 2;
 	logging.runs = 0;
 	logging.lookups.successes = logging.lookups.total = 0;
@@ -23,20 +22,16 @@ void initLogging(){
 	printf("Total runs: %.0Lf\n", logging.total_runs);
 }
 
-void clearLogging(){
-	extern struct stat logging;
-        logging.lookups.successes = logging.lookups.total = 0;
-        //logging.times.init = logging.times.search = logging.times.count = 0;
+void clearLoggingLookups(){
+	logging.lookups.successes = logging.lookups.total = 0;
 }
 
 void timeStart(){
-	extern struct stat logging;
 	logging.runs++;
 	logging.times.t1 = time(NULL);
 }
 
 void timeEnd(int mode){
-	extern struct stat logging;
 	time_t now = time(NULL);
 	time_t t = now - logging.times.t1;
 	logging.times.t1 = now;
@@ -54,14 +49,12 @@ void timeEnd(int mode){
 }
 
 void logLookup(int success){
-	extern struct stat logging;
 	logging.lookups.total++;
 	if(success) logging.lookups.successes++;
 }
 
 
 void printLogging(){
-	extern struct stat logging;
 	long double runs = logging.runs, rcompleted;
 	time_t now = time(NULL);
 	double total_time = difftime(now,logging.times.start);
@@ -83,17 +76,25 @@ void printLogging(){
 
 
 
-char save_path[500];
-void setSaveFile(const char *path){
-	strncpy(save_path, path, min(sizeof save_path, strlen(path)));
-}
-
-int loadProgress(Node *tree[]){
+char save_path[500] = "data/save.dat";
+int setSaveFile(const char *path){
+	if(sizeof save_path < strlen(path))
+		return -1;
+	
+	strncpy(save_path, path, sizeof save_path);
+	
 	return 0;
 }
 
-void saveProgress(Node *tree[]){
+struct prog loadProgress(double *total_elims, Node *tree[]){
+	struct prog p;
+	p.answer = 0;
+	p.guess1 = 0;
+	return p;
+}
 
+void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
+	
 }
 
 

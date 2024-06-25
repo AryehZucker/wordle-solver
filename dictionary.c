@@ -24,7 +24,6 @@ WordList loadWordList(const char *path){
 
 	fseek(fp, 0L, SEEK_END);
 	filesize = ftell(fp);
-	printf("%ld\n", filesize);
 	rewind(fp);
 
 	wl.words = (char *) malloc(filesize);
