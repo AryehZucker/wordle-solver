@@ -85,7 +85,6 @@ void printLogging(){
 
 char save_path[500];
 void setSaveFile(const char *path){
-	extern char save_path[];
 	strncpy(save_path, path, min(sizeof save_path, strlen(path)));
 }
 

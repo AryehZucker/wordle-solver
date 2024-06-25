@@ -2,27 +2,26 @@
 
 
 
-Dict words;
+int testing = FALSE;
+extern Dict words;
 
 
 
 int main(int argc, char *argv[]){
-	int arg = 1; //skip past the name of the prog
-	int t = 0; //test bool
+	int arg = 1; //current argument being processed (skip past the name of the prog)
 
 	double *total_elims;
 
 	int best_words[100];
-	char *word;
 	double most_elims;
 
 	if(strcmp(argv[arg], "-t") == 0){
-		t = 1;
+		testing = TRUE;
 		arg++;
 	}
 
 	//load dictionary files
-	words = getDict(argv[arg], argv[arg+1]);
+	loadDict(argv[arg], argv[arg+1]);
 	arg += 2;
 	if(words.guesses.len < 0 || words.answers.len < 0){
 		fprintf(stderr, "Error loading word lists\n");
@@ -35,19 +34,16 @@ int main(int argc, char *argv[]){
 	total_elims = (double *) malloc(words.guesses.len * sizeof (double));
 	for(int i=0; i<words.guesses.len; i++) total_elims[i] = 0;
 
-	if(t) test(); //test
+	if(testing) test(); //test
 
 	printf("Calculating eliminations...");
-	calcElims(total_elims, t);
+	calcElims(total_elims);
 	printf("Done\n");
 
 	//DEBUG
 	//output each word and its elims
 	for(int i=0; i<words.guesses.len; i++){
-		char word[6];
-		strncpy(word, getWord(i, words.guesses), 5);
-		word[5] = '\0';
-		printf("%s: %.0f\n", word, total_elims[i]);
+		printf("%s: %.0f\n", getWord(i, words.guesses), total_elims[i]);
 	}
 
 	printf("Finding best words...");
@@ -69,10 +65,7 @@ int main(int argc, char *argv[]){
 
 	printf("\nBest words:\n");
 	for(int i=0; best_words[i] >= 0; i++){
-		word = getWord(best_words[i], words.guesses);
-		for(int j=0; j<5; j++)
-			putchar(word[j]);
-		putchar('\n');
+		printf("%s\n", getWord(best_words[i], words.guesses));
 	}
 
 	printf("\nSaving data...");
@@ -91,7 +84,7 @@ int main(int argc, char *argv[]){
 
 
 
-void calcElims(double *total_elims, int test){
+void calcElims(double *total_elims){
 	char current_letter = '\0';
 	char *ans;
 	DataS *data_table;
@@ -110,7 +103,7 @@ void calcElims(double *total_elims, int test){
 	for(int i=0; i<=5; i++) e_tree[i] = NULL;
 	printf("Elims tree initialized.\n");
 
-	if(test) testElimsTable(); //test
+	if(testing) testElimsTable(); //test
 
 	printf("Beginning combinatorical calculations...\n");
 	initLogging(); //logging

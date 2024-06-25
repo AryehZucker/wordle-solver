@@ -19,6 +19,9 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
+#define TRUE 1
+#define FALSE 0
+
 enum { INIT , SEARCH , COUNT };
 
 typedef struct{
@@ -70,7 +73,7 @@ struct node{
 typedef struct node Node;
 
 
-Dict getDict(const char *ans_words_path, const char *guess_words_path);
+void loadDict(const char *ans_words_path, const char *guess_words_path);
 WordList loadWordList(const char *path);
 char *getWord(int index, WordList wl);
 
@@ -94,7 +97,7 @@ void hashData(const DataC *data, unsigned int *buffer);
 
 int weight(int bitstr);
 
-void calcElims(double *total_elims, int test);
+void calcElims(double *total_elims);
 
 void initLogging();
 void clearLogging(void);

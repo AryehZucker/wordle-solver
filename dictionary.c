@@ -1,12 +1,10 @@
 #include "headers.h"
 
-Dict getDict(const char *ans_words_path, const char *guess_words_path){
-	Dict words;
+Dict words;
 
+void loadDict(const char *ans_words_path, const char *guess_words_path){
 	words.answers = loadWordList(ans_words_path);
 	words.guesses = loadWordList(guess_words_path);
-
-	return words;
 }
 
 WordList loadWordList(const char *path){
@@ -26,12 +24,15 @@ WordList loadWordList(const char *path){
 
 	fseek(fp, 0L, SEEK_END);
 	filesize = ftell(fp);
+	printf("%ld\n", filesize);
 	rewind(fp);
 
 	wl.words = (char *) malloc(filesize);
 
-	for(char *word = wl.words; (n = fscanf(fp, "%5c\n", word)) == 1; word += 5)
+	for(char *word = wl.words; (n = fscanf(fp, "%5c\n", word)) == 1; word += 6){
 		word_count++;
+		word[5] = '\0';
+	}
 	fclose(fp);
 	if(n == 0){
 		fprintf(stderr, "Error: data corruption in %s\n", path);
@@ -47,5 +48,5 @@ WordList loadWordList(const char *path){
 //return a pointer to the first letter of the word in the WordList
 char *getWord(int index, WordList wl){
 	if(index >= wl.len) return NULL;
-	return wl.words+(index*5);
+	return wl.words+(index*6);
 }
