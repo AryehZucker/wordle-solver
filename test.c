@@ -130,18 +130,15 @@ void testElimsTable(){
 	while(trials--){
 		//pick an ans
 		ans = getWord(rand()%words.answers.len, words.answers);
-		strncpy(word, ans, 5);
-		fprintf(outfile, "Ans: %s\n", word);
+		fprintf(outfile, "Ans: %s\n", ans);
 		//load data table
 		genDataTable(ans, words.guesses, d_table);
 		//pick 2 guesses
 		g1 = rand()%words.guesses.len;
-		strncpy(word, getWord(g1, words.guesses), 5);
-		fprintf(outfile, "Guess 1: %s\n", word);
-		printDataS(d_table+g1, outfile);
 		g2 = rand()%words.guesses.len;
-		strncpy(word, getWord(g2, words.guesses), 5);
-		fprintf(outfile, "Guess 2: %s\n", word);
+		fprintf(outfile, "Guess 1: %s\n", getWord(g1, words.guesses));
+		fprintf(outfile, "Guess 2: %s\n", getWord(g2, words.guesses));
+		printDataS(d_table+g1, outfile);
 		printDataS(d_table+g2, outfile);
 		//find combo elims
 		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
@@ -151,12 +148,13 @@ void testElimsTable(){
 		fprintf(outfile, "\n");
 	}
 
+	printf("Save tree? ");
+	if(getchar() == 'y') saveTree(e_tree);
+	
+	
 	fclose(outfile);
 	free(d_table);
 	freeTree(e_tree, 6);
-
-	printf("Save tree? ");
-	if(getchar() == 'y') saveTree(e_tree);
 
 	while(getchar() != '\n') ;
 	printf("Done testing.\nPress ENTER to continue.");
