@@ -110,7 +110,7 @@ void calcElims(double *total_elims){
 	printf("Done\n");
 
 	printf("Beginning combinatorical calculations...\n");
-	initLogging(); //logging
+	initLogging(p); //logging
 	for(; ans_index < words.answers.len; ans_index++){
 		ans = getWord(ans_index, words.answers);
 		if(current_letter != ans[0]){

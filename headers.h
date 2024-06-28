@@ -74,6 +74,8 @@ typedef struct node Node;
 
 struct prog {
 	int answer, guess1;
+	long double runs;
+	long lookup_successes, total_lookups;
 };
 
 
@@ -103,7 +105,7 @@ int weight(int bitstr);
 
 void calcElims(double *total_elims);
 
-void initLogging();
+void initLogging(struct prog p);
 void clearLoggingLookups(void);
 void timeStart(void);
 void timeEnd(int mode);

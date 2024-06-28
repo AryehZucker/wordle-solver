@@ -11,10 +11,11 @@ struct stat {
 	long double runs, total_runs;
 } logging;
 
-void initLogging(){
+void initLogging(struct prog p){
 	logging.total_runs = (long double) words.answers.len * words.guesses.len * (words.guesses.len-1) / 2;
-	logging.runs = 0;
-	logging.lookups.successes = logging.lookups.total = 0;
+	logging.runs = p.runs;
+	logging.lookups.successes = p.lookup_successes;
+	logging.lookups.total = p.total_lookups;
 	logging.times.init = logging.times.search = logging.times.count = 0;
 	logging.times.start = logging.times.last_update = time(NULL);
 
@@ -105,6 +106,11 @@ void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
 		exit(1);
 	}
 
+	//write logging info
+	fwrite(&logging.runs, sizeof (long double), 1, fp);
+	fwrite(&logging.lookups.successes, sizeof (long), 1, fp);
+	fwrite(&logging.lookups.total, sizeof (long), 1, fp);
+	
 	//write which ans & guess we're upto
 	fwrite(&answer, sizeof (int), 1, fp);
 	fwrite(&guess1, sizeof (int), 1, fp);
@@ -116,16 +122,17 @@ void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
 	for(int i=0; i<6; i++)
 		writeTree(tree[i], fp);
 	
-	//close the file
-	fclose(fp);
-
 	//ensure everything was written
 	if(ferror(fp)){
 		char message[100];
 		sprintf(message, "Error writing to file %s", save_path);
 		perror(message);
+		fclose(fp);
 		exit(1);
 	}
+	
+	//close the file
+	fclose(fp);
 }
 
 Node *readTree(int size, FILE *fp){
@@ -151,9 +158,16 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 
 	if((fp = fopen(save_path, "rb")) == NULL){
 		p.answer = p.guess1 = 0;
+		p.runs = 0;
+		p.lookup_successes = p.total_lookups = 0;
 		return p;
 	}
 
+	//read logging info
+	fread(&p.runs, sizeof (long double), 1, fp);
+	fread(&p.lookup_successes, sizeof (long), 1, fp);
+	fread(&p.total_lookups, sizeof (long), 1, fp);
+	
 	//read which ans & guess we're upto
 	fread(&p.answer, sizeof (int), 1, fp);
 	fread(&p.guess1, sizeof (int), 1, fp);
@@ -193,7 +207,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 		char message[100];
 		sprintf(message, "Error reading from file %s", save_path);
 		perror(message);
-		fprintf(stderr, "Starting calculations from the beginning.");
+		fprintf(stderr, "Starting calculations from the beginning.\n");
 		
 		p.answer = p.guess1 = 0;
 		memset(total_elims, 0, sizeof (double) * words.guesses.len);
