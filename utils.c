@@ -96,8 +96,15 @@ void writeTree(Node *node, FILE *fp){
 	writeTree(node->right, fp);
 }
 
-void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
+long double treeSize(Node *node){
+	if(node == NULL) return 0;
+	
+	return treeSize(node->left) + 1 + treeSize(node->right);
+}
+
+void saveProgress(int answer, double* total_elims, Node *tree[]){
 	FILE *fp;
+	long double size;
 
 	if((fp = fopen(save_path, "wb")) == NULL){
 		char message[100];
@@ -107,20 +114,23 @@ void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
 	}
 
 	//write logging info
-	fwrite(&logging.runs, sizeof (long double), 1, fp);
-	fwrite(&logging.lookups.successes, sizeof (long), 1, fp);
-	fwrite(&logging.lookups.total, sizeof (long), 1, fp);
+	fwrite(&logging.runs, sizeof (logging.runs), 1, fp);
+	fwrite(&logging.lookups.successes, sizeof (logging.lookups.successes), 1, fp);
+	fwrite(&logging.lookups.total, sizeof (logging.lookups.total), 1, fp);
 	
 	//write which ans & guess we're upto
-	fwrite(&answer, sizeof (int), 1, fp);
-	fwrite(&guess1, sizeof (int), 1, fp);
+	fwrite(&answer, sizeof (answer), 1, fp);
 
 	//write total_elims
+	fwrite(&words.guesses.len, sizeof (words.guesses.len), 1, fp);
 	fwrite(total_elims, sizeof (double), words.guesses.len, fp);
 
 	//write elims tree
-	for(int i=0; i<6; i++)
+	for(int i=0; i<6; i++){
+		size = treeSize(tree[i]);
+		fwrite(&size, sizeof (size), 1, fp);
 		writeTree(tree[i], fp);
+	}
 	
 	//ensure everything was written
 	if(ferror(fp)){
@@ -135,13 +145,13 @@ void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
 	fclose(fp);
 }
 
-Node *readTree(int size, FILE *fp){
+Node *readTree(long double size, FILE *fp){
 	if(size == 0) return NULL;
 	
 	Node *node = malloc(sizeof(Node));
 	
-	int remaining_size = size - 1,
-		left_size = remaining_size / 2,
+	long double remaining_size = size - 1,
+		left_size = floor(remaining_size / 2),
 		right_size = remaining_size - left_size;
 	
 	node->left = readTree(left_size, fp);
@@ -150,70 +160,84 @@ Node *readTree(int size, FILE *fp){
 	fread(&node->elims, sizeof(int), 1, fp);
 	
 	node->right = readTree(right_size, fp);
+	
+	return node;
 }
 
 struct prog loadProgress(double *total_elims, Node *tree[]){
-	struct prog p;
+	struct prog p, p_empty = {0, 0.0L, 0L, 0L};
 	FILE *fp;
+	int guesses_len;
 
 	if((fp = fopen(save_path, "rb")) == NULL){
-		p.answer = p.guess1 = 0;
-		p.runs = 0;
-		p.lookup_successes = p.total_lookups = 0;
-		return p;
+		printf("No saved data found\n");
+		return p_empty;
 	}
+	
+	printf("Found saved data\n");
 
 	//read logging info
-	fread(&p.runs, sizeof (long double), 1, fp);
-	fread(&p.lookup_successes, sizeof (long), 1, fp);
-	fread(&p.total_lookups, sizeof (long), 1, fp);
+	fread(&p.runs, sizeof (p.runs), 1, fp);
+	fread(&p.lookup_successes, sizeof (p.lookup_successes), 1, fp);
+	fread(&p.total_lookups, sizeof (p.total_lookups), 1, fp);
+	
+	//printf("%.0Lf %ld %ld\n", p.runs, p.lookup_successes, p.total_lookups);	//DEBUG
 	
 	//read which ans & guess we're upto
-	fread(&p.answer, sizeof (int), 1, fp);
-	fread(&p.guess1, sizeof (int), 1, fp);
-
+	fread(&p.answer, sizeof (p.answer), 1, fp);
+	
 	//read in total_elims
+	fread(&guesses_len, sizeof (guesses_len), 1, fp);
+	if(guesses_len != words.guesses.len){
+		fprintf(stderr, "Error reading from file %s: amount of data does not match\n", save_path);
+		fprintf(stderr, "Starting calculations from the beginning.\n");
+		fclose(fp);
+		return p_empty;
+	}
 	fread(total_elims, sizeof (double), words.guesses.len, fp);
+	if(feof(fp)){
+		fprintf(stderr, "Error reading from file %s: EOF encountered while parsing file\n", save_path);
+		fprintf(stderr, "Starting calculations from the beginning.\n");
+		fclose(fp);
+		memset(total_elims, 0, sizeof (double) * words.guesses.len);
+		return p_empty;
+	}
 
 	//read in the elims tree
-	long position;
-	int size;
+	fpos_t position;
+	long double size;
 	struct entry_t {
 		int elims;
 		unsigned int hash[HASH_LEN];
 	} entry;
 	for(int i=0; i<6; i++){
 		//find the size of this section of the tree
-		// 1) save location in file
-		// 2) look through file to find the size
-		// 3) go back to saved location
-		position = ftell(fp);
-		size = 0;
-		do{
-			fread(&entry, sizeof(struct entry_t), 1, fp);
-			if(entry.hash[1] == i) size++;
-		} while(entry.hash[1] == i);
-		fseek(fp, 0, position);
+		fread(&size, sizeof size, 1, fp);
 		
 		//generate a tree of that size and load it in
 		tree[i] = readTree(size, fp);
 	}
 	
-	//close the file
-	fclose(fp);
-	
 	//ensure averything was read
-	if(ferror(fp)){
-		char message[100];
-		sprintf(message, "Error reading from file %s", save_path);
-		perror(message);
+	if(ferror(fp) || feof(fp)){
+		if(ferror(fp)){
+			char message[100];
+			sprintf(message, "Error reading from file %s", save_path);
+			perror(message);
+		}
+		else{
+			fprintf(stderr, "Error reading from file %s: EOF encountered while parsing file\n", save_path);
+		}
 		fprintf(stderr, "Starting calculations from the beginning.\n");
 		
-		p.answer = p.guess1 = 0;
+		p = p_empty;
 		memset(total_elims, 0, sizeof (double) * words.guesses.len);
 		freeTree(tree, 6);
 		for(int i=0; i<6; i++) tree[i] = NULL;
 	}
+	
+	//close the file
+	fclose(fp);
 
 	return p;
 }

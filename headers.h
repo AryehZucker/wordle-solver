@@ -73,7 +73,7 @@ typedef struct node Node;
 
 
 struct prog {
-	int answer, guess1;
+	int answer;
 	long double runs;
 	long lookup_successes, total_lookups;
 };
@@ -114,7 +114,7 @@ void printLogging();
 
 int setSaveFile(const char *path);
 struct prog loadProgress(double *total_elims, Node *tree[]);
-void saveProgress(int answer, int guess1, double *total_elims, Node *tree[]);
+void saveProgress(int answer, double *total_elims, Node *tree[]);
 void showDataA(const char *word, const DataA *data);
 void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp);
 void printDataS(const DataS *data, FILE *fp);

@@ -1,7 +1,6 @@
 TODO:
-- make the program save its work before quitting, and load saved work on startup (write loadProgress and saveProgress functions)
 - optimize keeping track of a change in simplify (low priority)
-- (convert data structures to 'int')
 - see if data lookup can be sped up with a hash table
 - write my own getMem method to allocate memory gotten from malloc
+- think of a way to speed up the count
 - shuffle the wordslists to avoid worst case scenarios

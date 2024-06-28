@@ -1,11 +1,18 @@
 #include "headers.h"
+#include <signal.h>
 
 
 
-int testing = FALSE;
+int testing = FALSE, interrupt = FALSE;
 extern Dict words;
 
 
+
+void handler(int sig){
+	if(sig == SIGINT){
+		interrupt = TRUE;
+	}
+}
 
 int main(int argc, char *argv[]){
 	int arg = 1; //current argument being processed (skip past the name of the prog)
@@ -14,6 +21,8 @@ int main(int argc, char *argv[]){
 
 	int best_words[100];
 	double most_elims;
+	
+	signal(SIGINT, handler);
 
 	if(strcmp(argv[arg], "-t") == 0){
 		testing = TRUE;
@@ -106,12 +115,14 @@ void calcElims(double *total_elims){
 	printf("Loading stored progress...\n");
 	struct prog p = loadProgress(total_elims, elims_tree);
 	int ans_index = p.answer;
-	int g1_index = p.guess1;
 	printf("Done\n");
 
 	printf("Beginning combinatorical calculations...\n");
 	initLogging(p); //logging
 	for(; ans_index < words.answers.len; ans_index++){
+		saveProgress(ans_index, total_elims, elims_tree);
+		if(interrupt) exit(1);
+		
 		ans = getWord(ans_index, words.answers);
 		if(current_letter != ans[0]){
 			current_letter = ans[0];
@@ -119,9 +130,7 @@ void calcElims(double *total_elims){
 		}
 
 		genDataTable(ans, words.guesses, data_table);
-		for(; g1_index < words.guesses.len-1; g1_index++){
-			saveProgress(ans_index, g1_index, total_elims, elims_tree);
-			
+		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
 				timeStart(); //logging
 				elims = getComboElims(data_table+g1_index, data_table+g2_index, elims_tree);
@@ -130,14 +139,13 @@ void calcElims(double *total_elims){
 			}
 			printLogging(); //logging
 		}
-		g1_index = 0;
 
 		clearLoggingLookups(); //logging
 	}
 	
 	//save final progress
 	//	(set answer to answers length so any subsequent runs will skip past any calculations)
-	saveProgress(words.answers.len, 0, total_elims, elims_tree);
+	saveProgress(words.answers.len, total_elims, elims_tree);
 
 	printf("\n");
 	
