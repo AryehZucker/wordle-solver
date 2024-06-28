@@ -8,7 +8,6 @@
 
 
 
-#define SAVE_PATH "data/combo_data.dat"
 #define CAPPED 010U
 
 #define EMPTY (-1)
@@ -114,7 +113,6 @@ void printLogging();
 int setSaveFile(const char *path);
 struct prog loadProgress(double *total_elims, Node *tree[]);
 void saveProgress(int answer, int guess1, double *total_elims, Node *tree[]);
-int saveData(double *data, int len);
 void showDataA(const char *word, const DataA *data);
 void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp);
 void printDataS(const DataS *data, FILE *fp);
