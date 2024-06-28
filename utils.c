@@ -115,6 +115,9 @@ void saveProgress(int answer, int guess1, double* total_elims, Node *tree[]){
 	//write elims tree
 	for(int i=0; i<6; i++)
 		writeTree(tree[i], fp);
+	
+	//close the file
+	fclose(fp);
 
 	//ensure everything was written
 	if(ferror(fp)){
@@ -131,15 +134,15 @@ Node *readTree(int size, FILE *fp){
 	Node *node = malloc(sizeof(Node));
 	
 	int remaining_size = size - 1,
-		left_size = remainig_size / 2,
-		right_size = remainig_size - left_size;
+		left_size = remaining_size / 2,
+		right_size = remaining_size - left_size;
 	
-	node->left = genTree(left_size, fp);
+	node->left = readTree(left_size, fp);
 	
 	fread(node->hash, sizeof(unsigned int), HASH_LEN, fp);
 	fread(&node->elims, sizeof(int), 1, fp);
 	
-	node->right = genTree(right_size, fp);
+	node->right = readTree(right_size, fp);
 }
 
 struct prog loadProgress(double *total_elims, Node *tree[]){
@@ -171,7 +174,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 		// 2) look through file to find the size
 		// 3) go back to saved location
 		position = ftell(fp);
-		count = 0;
+		size = 0;
 		do{
 			fread(&entry, sizeof(struct entry_t), 1, fp);
 			if(entry.hash[1] == i) size++;
@@ -182,6 +185,9 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 		tree[i] = readTree(size, fp);
 	}
 	
+	//close the file
+	fclose(fp);
+	
 	//ensure averything was read
 	if(ferror(fp)){
 		char message[100];
@@ -189,7 +195,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 		perror(message);
 		fprintf(stderr, "Starting calculations from the beginning.");
 		
-		p.last_answer = p.last_guess1 = 0;
+		p.answer = p.guess1 = 0;
 		memset(total_elims, 0, sizeof (double) * words.guesses.len);
 		freeTree(tree, 6);
 		for(int i=0; i<6; i++) tree[i] = NULL;
