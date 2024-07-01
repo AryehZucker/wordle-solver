@@ -23,7 +23,7 @@ void initLogging(struct prog p){
 	printf("Total runs: %.0Lf\n", logging.total_runs);
 }
 
-void clearLoggingLookups(){
+void clearLookups(){
 	logging.lookups.successes = logging.lookups.total = 0;
 }
 

@@ -55,9 +55,9 @@ int main(int argc, char *argv[]){
 
 	//DEBUG
 	//output each word and its elims
-	for(int i=0; i<words.guesses.len; i++){
-		printf("%s: %.0f\n", getWord(i, words.guesses), total_elims[i]);
-	}
+	//for(int i=0; i<words.guesses.len; i++){
+	//	printf("%s: %.0f\n", getWord(i, words.guesses), total_elims[i]);
+	//}
 
 	printf("Finding best words...");
 	most_elims = 0;
@@ -92,7 +92,6 @@ int main(int argc, char *argv[]){
 
 
 void calcElims(double *total_elims){
-	char current_letter = '\0';
 	char *ans;
 	DataS *data_table;
 	Node *elims_tree[WORDLEN+1];
@@ -121,14 +120,8 @@ void calcElims(double *total_elims){
 	initLogging(p); //logging
 	for(; ans_index < words.answers.len; ans_index++){
 		saveProgress(ans_index, total_elims, elims_tree);
-		if(interrupt) exit(1);
 		
 		ans = getWord(ans_index, words.answers);
-		if(current_letter != ans[0]){
-			current_letter = ans[0];
-			printf("\n%c\n", toupper(current_letter));
-		}
-
 		genDataTable(ans, words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
@@ -138,9 +131,8 @@ void calcElims(double *total_elims){
 				total_elims[g2_index] += elims;
 			}
 			printLogging(); //logging
+			if(interrupt) exit(1);
 		}
-
-		clearLoggingLookups(); //logging
 	}
 	
 	//save final progress
