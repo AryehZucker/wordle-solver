@@ -28,9 +28,10 @@ WordList loadWordList(const char *path){
 
 	wl.words = (char *) malloc(filesize);
 
-	for(char *word = wl.words; (n = fscanf(fp, "%5c\n", word)) == 1; word += 6){
+	//note: "%5c\n" is 5 because WORDLEN = 5. if WORDLEN changes, change 5 to match.
+	for(char *word = wl.words; (n = fscanf(fp, "%5c\n", word)) == 1; word += WORDLEN+1){
 		word_count++;
-		word[5] = '\0';
+		word[WORDLEN] = '\0';
 	}
 	fclose(fp);
 	if(n == 0){

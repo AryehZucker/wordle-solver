@@ -8,6 +8,8 @@
 
 
 
+#define WORDLEN 5
+
 #define CAPPED 010U
 
 #define EMPTY (-1)

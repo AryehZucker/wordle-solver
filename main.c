@@ -95,7 +95,7 @@ void calcElims(double *total_elims){
 	char current_letter = '\0';
 	char *ans;
 	DataS *data_table;
-	Node *elims_tree[5+1];
+	Node *elims_tree[WORDLEN+1];
 	int elims;
 
 	printf("\n");

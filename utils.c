@@ -255,7 +255,7 @@ void showDataA(const char *word, const DataA *data){
 		if(letters & 1){
 			printf("  %c - %d ", c, (int) letter_data->amount);
 			bits = letter_data->pos;
-			for(int j=0; j<5; j++)
+			for(int j=0; j<WORDLEN; j++)
 				printf("%d", (bits&(1<<j))>>j);
 			printf("\n");
 
@@ -278,11 +278,11 @@ void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp)
 		fprintf(fp, "%d\t", (int) letter_data->amount&~CAPPED);
 		fprintf(fp, "%c\t", (letter_data->amount&CAPPED?'T':'F'));
 		bits = letter_data->known_pos;
-		for(int j=0; j<5; j++)
+		for(int j=0; j<WORDLEN; j++)
 			fprintf(fp, "%d", (bits&(1<<j))>>j);
 		fprintf(fp, "\t");
 		bits = letter_data->bad_pos;
-		for(int j=0; j<5; j++)
+		for(int j=0; j<WORDLEN; j++)
 			fprintf(fp, "%d", (bits&(1<<j))>>j);
 		fprintf(fp, "\n");
 		letter_data++;
@@ -297,7 +297,7 @@ void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp)
 
 void saveTree(Node *tree[]){
 	FILE *fp = fopen("data/tree.txt", "w");
-	for(int i=0; i<=5; i++)
+	for(int i=0; i<=WORDLEN; i++)
 		printTree(tree[i], fp);
 	fclose(fp);
 }

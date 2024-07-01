@@ -42,7 +42,7 @@ void wordToData(const char *word, DataA *data){
 		letter_data[i].amount = letter_data[i].pos = 0;
 
 	//mark all the positions of each letter
-	for(int i=0; i<5; i++){
+	for(int i=0; i<WORDLEN; i++){
 		letter_data[word[i]-'a'].amount++;
 		letter_data[word[i]-'a'].pos |= 1<<i;
 	}
@@ -80,7 +80,7 @@ void genData(const char *guess, const char *ans, DataS *data){
 		letter_data[i].bad_pos = 0x1F;
 	}
 
-	for(int i=0; i<5; i++){
+	for(int i=0; i<WORDLEN; i++){
 		//find all "known_pos"
 		if((letter = guess[i]) == ans[i])
 			letter_data[letter-'a'].known_pos |= 1<<i; //turn on the i-th bit
@@ -93,7 +93,7 @@ void genData(const char *guess, const char *ans, DataS *data){
 	for(int i=0; i<26; i++){
 		//count how many letter "i"s are in guess and answer
 		guess_count = ans_count = 0;
-		for(int j=0; j<5; j++){
+		for(int j=0; j<WORDLEN; j++){
 			if(guess[j] == ('a'+i)) guess_count++;
 			if(  ans[j] == ('a'+i))   ans_count++;
 		}
@@ -315,7 +315,7 @@ void simplify(DataL *letter_data, const int data_len){
 				}
 			}
 			//capped:2
-			else if(total_amount == 5){
+			else if(total_amount == WORDLEN){
 				if( !(letter_data[i].amount & CAPPED)){
 					letter_data[i].amount |= CAPPED;
 					changed = 1;
@@ -365,8 +365,8 @@ void hashData(const DataC *data, unsigned int *buffer){
 
 	//multiple data can be combined into one int
 	for(i=0; i<len; i++){
-		tmp = data->letter_data[i].amount << 10;
-		tmp |= data->letter_data[i].known_pos << 5;
+		tmp = data->letter_data[i].amount << (WORDLEN*2);
+		tmp |= data->letter_data[i].known_pos << WORDLEN;
 		tmp |= data->letter_data[i].bad_pos;
 
 		if(i%2 == 0){

@@ -5,8 +5,7 @@
 extern Dict words;
 
 void test(){
-	char word[6];
-	word[5] = '\0';
+	char *word;
 	int n;
 	DataA ans_data;
 
@@ -22,30 +21,30 @@ void test(){
 	printf("Testing Guess-Dict:\n");
 	for(int i=0; i<3; i++){
 		n = rand()%words.guesses.len;
-		printf("%d:\t%s\n", n, strncpy(word, getWord(n,words.guesses), 5));
+		printf("%d:\t%s\n", n, getWord(n,words.guesses));
 	}
 	printf("\n");
 
 	printf("Testing Ans-Dict:\n");
 	for(int i=0; i<3; i++){
 		n = rand()%words.answers.len;
-		printf("%d:\t%s\n", n, strncpy(word, getWord(n,words.answers), 5));
+		printf("%d:\t%s\n", n, getWord(n,words.answers));
 	}
 	printf("\n\n");
 
 	//Test wordToData
 	printf("Testing 'wordToData':\n");
 	n = rand()%words.answers.len;
-	strncpy(word, getWord(n, words.answers), 5);
+	word = getWord(n, words.answers);
 	wordToData(word, &ans_data);
 	showDataA(word, &ans_data);
 	printf("\n\n");
 
 	//Test weight
 	printf("Testing 'weight':\n");
-	n = rand()%(1<<5);
+	n = rand()%(1<<WORDLEN);
 	printf("weight of ");
-	for(int i=0; i<5; i++)
+	for(int i=0; i<WORDLEN; i++)
 		printf("%d", (n&(1<<i))>>i);
 	printf(" = %d\n", weight(n));
 	printf("\n\n");
@@ -94,10 +93,9 @@ void test(){
 	DataS *d_table = malloc(words.guesses.len * sizeof (DataS));
 	genDataTable(ans, words.guesses, d_table);
 	n = rand()%words.guesses.len;
-	strncpy(word, getWord(n, words.guesses), 5);
+	word = getWord(n, words.guesses);
 	printf("Guess: %s\t", word);
-	strncpy(word, ans, 5);
-	printf("Answer: %s\n", word);
+	printf("Answer: %s\n", ans);
 	printDataS(d_table+n, stdout);
 	free(d_table);
 	printf("\n\n");
@@ -119,10 +117,10 @@ void testElimsTable(){
 	FILE *outfile;
 	char *ans, word[6];
 	int g1, g2, elims;
-	word[5] = '\0';
+	word[WORDLEN] = '\0';
 	DataS *d_table = malloc(words.guesses.len * sizeof (DataS));
-	Node *e_tree[5+1];
-	for(int i=0; i<5+1; i++) e_tree[i] = NULL;
+	Node *e_tree[WORDLEN+1];
+	for(int i=0; i<WORDLEN+1; i++) e_tree[i] = NULL;
 
 	printf("\n\nTesting elims table...\n\n");
 
