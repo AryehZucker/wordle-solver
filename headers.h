@@ -77,6 +77,7 @@ typedef struct node Node;
 struct prog {
 	int answer;
 	long double runs;
+	double time_offset;
 	long lookup_successes, total_lookups;
 };
 

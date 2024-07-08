@@ -1,11 +1,13 @@
 #! /bin/bash
 
+FLAGS="-Ofast -Wall"
+
 if [ $1 ]; then
 	echo "compiling file: $1"
-	gcc -Ofast -c $1
+	gcc $FLAGS -c $1
 else
 	echo -en "compiling files:" *.c "\n"
-	gcc -Ofast -c $(ls *.c)
+	gcc $FLAGS -c $(ls *.c)
 fi
 
 if (($? != 0)); then
@@ -20,4 +22,4 @@ fi
 mv *.o obj_files/
 
 echo -en "linking files:" *.o "--> firstword\n"
-gcc -Ofast obj_files/*.o -o firstword
+gcc $FLAGS obj_files/*.o -o firstword

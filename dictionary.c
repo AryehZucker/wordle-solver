@@ -61,9 +61,9 @@ void shuffleWordList(WordList wl){
 
 void swapWords(char *word1, char *word2){
 	char temp[WORDLEN+1];
-	strncpy(temp, word1, WORDLEN+1);
-	strncpy(word1, word2, WORDLEN+1);
-	strncpy(word2, temp, WORDLEN+1);
+	strncpy(temp, word1, WORDLEN);
+	strncpy(word1, word2, WORDLEN);
+	strcpy(word2, temp);
 }
 
 //return a pointer to the first letter of the word in the WordList

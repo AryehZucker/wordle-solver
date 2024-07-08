@@ -14,8 +14,8 @@ void test(){
 	srand(time(NULL));
 
 	//make sure a char is only one byte
-	printf("Char size: %d byte(s)\n\n", sizeof (char));
-	printf("Int  size: %d byte(s)\n\n", sizeof (int));
+	printf("Char size: %ld byte(s)\n\n", sizeof (char));
+	printf("Int  size: %ld byte(s)\n\n", sizeof (int));
 
 	//Test dictionary functions
 	printf("Testing Guess-Dict:\n");
@@ -115,9 +115,8 @@ void testSimplify(DataS *data){
 void testElimsTable(){
 	long trials = 10000;
 	FILE *outfile;
-	char *ans, word[6];
+	char *ans;
 	int g1, g2, elims;
-	word[WORDLEN] = '\0';
 	DataS *d_table = malloc(words.guesses.len * sizeof (DataS));
 	Node *e_tree[WORDLEN+1];
 	for(int i=0; i<WORDLEN+1; i++) e_tree[i] = NULL;

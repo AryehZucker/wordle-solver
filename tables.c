@@ -101,10 +101,11 @@ void genData(const char *guess, const char *ans, DataS *data){
 		//find "amount"
 		letter_data[i].amount = min(guess_count, ans_count);
 		//find "capped"
-		if(guess_count > letter_data[i].amount)
+		if(guess_count > letter_data[i].amount){
 			if(ans_count == 0)	//the letter is not in the ans
 				data->bad_letters |= 1<<i;
 			else letter_data[i].amount |= CAPPED;
+		}
 	}
 
 	//load all non-empty data into "data"

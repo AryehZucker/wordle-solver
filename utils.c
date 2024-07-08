@@ -7,7 +7,7 @@ extern Dict words;
 //logging
 struct stat {
 	struct { long successes, total; } lookups;
-	struct { time_t start, last_update, t1, init, search, count; } times;
+	struct { time_t offset, start, last_update, t1, init, search, count; } times;
 	long double runs, total_runs;
 } logging;
 
@@ -16,6 +16,7 @@ void initLogging(struct prog p){
 	logging.runs = p.runs;
 	logging.lookups.successes = p.lookup_successes;
 	logging.lookups.total = p.total_lookups;
+	logging.times.offset = p.time_offset;
 	logging.times.init = logging.times.search = logging.times.count = 0;
 	logging.times.start = logging.times.last_update = time(NULL);
 
@@ -58,7 +59,7 @@ void logLookup(int success){
 void printLogging(){
 	long double runs = logging.runs, rcompleted;
 	time_t now = time(NULL);
-	double total_time = difftime(now,logging.times.start);
+	double total_time = logging.times.offset + difftime(now,logging.times.start);
 
 	if(difftime(now, logging.times.last_update) < 1) return;
 
@@ -77,7 +78,7 @@ void printLogging(){
 
 
 
-char save_path[500] = "data/save.dat";
+char save_path[100] = "save.dat";
 int setSaveFile(const char *path){
 	if(sizeof save_path < strlen(path))
 		return -1;
@@ -105,9 +106,10 @@ long double treeSize(Node *node){
 void saveProgress(int answer, double* total_elims, Node *tree[]){
 	FILE *fp;
 	long double size;
+	double total_time = logging.times.offset + difftime(time(NULL), logging.times.start);
 
 	if((fp = fopen(save_path, "wb")) == NULL){
-		char message[100];
+		char message[200];
 		sprintf(message, "Error opening %s", save_path);
 		perror(message);
 		exit(1);
@@ -115,6 +117,7 @@ void saveProgress(int answer, double* total_elims, Node *tree[]){
 
 	//write logging info
 	fwrite(&logging.runs, sizeof (logging.runs), 1, fp);
+	fwrite(&total_time, sizeof (total_time), 1, fp);
 	fwrite(&logging.lookups.successes, sizeof (logging.lookups.successes), 1, fp);
 	fwrite(&logging.lookups.total, sizeof (logging.lookups.total), 1, fp);
 	
@@ -134,7 +137,7 @@ void saveProgress(int answer, double* total_elims, Node *tree[]){
 	
 	//ensure everything was written
 	if(ferror(fp)){
-		char message[100];
+		char message[200];
 		sprintf(message, "Error writing to file %s", save_path);
 		perror(message);
 		fclose(fp);
@@ -165,7 +168,7 @@ Node *readTree(long double size, FILE *fp){
 }
 
 struct prog loadProgress(double *total_elims, Node *tree[]){
-	struct prog p, p_empty = {0, 0.0L, 0L, 0L};
+	struct prog p, p_empty = {0, 0.0L, 0.0, 0L, 0L};
 	FILE *fp;
 	int guesses_len;
 
@@ -178,6 +181,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 
 	//read logging info
 	fread(&p.runs, sizeof (p.runs), 1, fp);
+	fread(&p.time_offset, sizeof (p.time_offset), 1, fp);
 	fread(&p.lookup_successes, sizeof (p.lookup_successes), 1, fp);
 	fread(&p.total_lookups, sizeof (p.total_lookups), 1, fp);
 	
@@ -204,12 +208,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 	}
 
 	//read in the elims tree
-	fpos_t position;
 	long double size;
-	struct entry_t {
-		int elims;
-		unsigned int hash[HASH_LEN];
-	} entry;
 	for(int i=0; i<6; i++){
 		//find the size of this section of the tree
 		fread(&size, sizeof size, 1, fp);
@@ -221,7 +220,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 	//ensure averything was read
 	if(ferror(fp) || feof(fp)){
 		if(ferror(fp)){
-			char message[100];
+			char message[200];
 			sprintf(message, "Error reading from file %s", save_path);
 			perror(message);
 		}
