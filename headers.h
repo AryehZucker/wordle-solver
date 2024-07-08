@@ -84,8 +84,6 @@ struct prog {
 
 void loadDict(const char *ans_words_path, const char *guess_words_path);
 WordList loadWordList(const char *path);
-void shuffleWordList(WordList wl);
-void swapWords(char *word1, char *word2);
 char *getWord(int index, WordList wl);
 
 void wordToData(const char *word, DataA *data);

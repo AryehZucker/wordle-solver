@@ -3,11 +3,8 @@
 Dict words;
 
 void loadDict(const char *ans_words_path, const char *guess_words_path){
-	words.answers = loadWordList(ans_words_path);
-	shuffleWordList(words.answers);
-	
+	words.answers = loadWordList(ans_words_path);	
 	words.guesses = loadWordList(guess_words_path);
-	shuffleWordList(words.guesses);
 }
 
 WordList loadWordList(const char *path){
@@ -46,24 +43,6 @@ WordList loadWordList(const char *path){
 	wl.len = word_count;
 
 	return wl;
-}
-
-void shuffleWordList(WordList wl){
-	int index;
-	
-	srand(time(NULL));
-	
-	for(int i=0; i<wl.len; i++){
-		index = rand() % (wl.len - i) + i; //pick a random word from what's left
-		swapWords(getWord(i, wl), getWord(index, wl));
-	}
-}
-
-void swapWords(char *word1, char *word2){
-	char temp[WORDLEN+1];
-	strncpy(temp, word1, WORDLEN);
-	strncpy(word1, word2, WORDLEN);
-	strcpy(word2, temp);
 }
 
 //return a pointer to the first letter of the word in the WordList
