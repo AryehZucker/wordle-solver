@@ -1,6 +1,6 @@
 data/
 dict/
-obj_files/
+obj/
 testing/
 firstword
 save.dat
