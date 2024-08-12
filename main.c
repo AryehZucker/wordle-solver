@@ -119,6 +119,7 @@ void calcElims(double *total_elims){
 	printf("Beginning combinatorical calculations...\n");
 	initLogging(p); //logging
 	for(; ans_index < words.answers.len; ans_index++){
+		printf("\nSaving\n");
 		saveProgress(ans_index, total_elims, elims_tree);
 		
 		ans = getWord(ans_index, words.answers);

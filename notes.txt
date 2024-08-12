@@ -3,4 +3,4 @@ TODO:
 - see if data lookup can be sped up with a hash table
 - write my own getMem method to allocate memory gotten from malloc
 - think of a way to speed up the count
-- shuffle the wordslists to avoid worst case scenarios
+- make saving data non-blocking
