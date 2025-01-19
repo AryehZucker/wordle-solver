@@ -1,6 +1,5 @@
 data/
-dict/
 obj/
 testing/
-firstword
+wordle-solver
 save.dat

@@ -1,6 +1,0 @@
-TODO:
-- optimize keeping track of a change in simplify (low priority)
-- see if data lookup can be sped up with a hash table
-- write my own getMem method to allocate memory gotten from malloc
-- think of a way to speed up the count
-- make saving data non-blocking

@@ -8,7 +8,7 @@ The program performs the following steps:
 1. It takes two word lists as input:
     - A list of valid guesses.
     - A list of possible answers.
-2. For every combination of two valid guesses, the program analyzes them alongside each potential answer. It creates a data structure representing the information that a player would deduce based on the feedback he would recieve from these guesses. This data structure contains:
+2. For every combination of two valid guesses, the program analyzes them alongside each potential answer. It creates a data structure representing the information that a player would deduce based on the feedback he would receive from these guesses. This data structure contains:
     - Letters known to be in the answer.
     - Letters known not to be in the answer.  
     For each letter known to be in the answer, the data structure stores four additional pieces of information:
@@ -41,7 +41,7 @@ Once compiled, the program can be executed from the command line. You must provi
 
 Example usage:
 ```bash
-./firstword <path_to_possible_answers> <path_to_valid_guesses>
+./wordle-solver words/answers.txt words/guesses.txt
 ```
 
 As the program runs, it will display progress in the terminal. Once completed, it will output the best guesses based on the analysis.

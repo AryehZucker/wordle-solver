@@ -1,15 +1,15 @@
 #! /bin/bash
 
-ANS_WORDS=dict/ans_words-shuffle.txt
-GUESS_WORDS=dict/guess_words-shuffle.txt
-GUESS_WORDS_SHORT=dict/guess_words-short-shuffle.txt
+ANSWERS=words/answers-shuffle.txt
+GUESSES=words/guesses-shuffle.txt
+GUESSES_SHORT=words/guesses-short-shuffle.txt
 
-head -n $1 $GUESS_WORDS >$GUESS_WORDS_SHORT
+head -n $1 $GUESSES >$GUESSES_SHORT
 
 if [ $2 ] && [ $2 == "-b" ]; then
-	./firstword $ANS_WORDS $GUESS_WORDS_SHORT &>out.txt &
+	./wordle-solver $ANSWERS $GUESSES_SHORT &>out.txt &
 elif [ $2 ] && [ $2 == "-t" ]; then
-	./firstword -t $ANS_WORDS $GUESS_WORDS_SHORT
+	./wordle-solver -t $ANSWERS $GUESSES_SHORT
 else
-	./firstword $ANS_WORDS $GUESS_WORDS_SHORT
+	./wordle-solver $ANSWERS $GUESSES_SHORT
 fi

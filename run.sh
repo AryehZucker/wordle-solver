@@ -1,12 +1,12 @@
 #! /bin/bash
 
-ANS_WORDS=dict/ans_words-shuffle.txt
-GUESS_WORDS=dict/guess_words-shuffle.txt
+ANSWERS=words/answers-shuffle.txt
+GUESSES=words/guesses-shuffle.txt
 
 if [ $1 ] && [ $1 == "-b" ]; then
-	./firstword $ANS_WORDS $GUESS_WORDS &>out.txt &
+	./wordle-solver $ANSWERS $GUESSES &>out.txt &
 elif [ $1 ] && [ $1 == "-t" ]; then
-	./firstword -t $ANS_WORDS $GUESS_WORDS
+	./wordle-solver -t $ANSWERS $GUESSES
 else
-	./firstword $ANS_WORDS $GUESS_WORDS
+	./wordle-solver $ANSWERS $GUESSES
 fi

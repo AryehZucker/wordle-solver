@@ -1,4 +1,4 @@
-TARGET := firstword
+TARGET := wordle-solver
 
 CC := gcc
 # -MMD & -MP generate dependency files so make doesn't need to rebuild the whole package every time
