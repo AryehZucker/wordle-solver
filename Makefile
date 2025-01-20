@@ -1,15 +1,15 @@
 TARGET := wordle-solver
+SRCDIR ::= src
+OBJDIR ::= obj
+INCLUDEDIR ::= include
 
 CC := gcc
 # -MMD & -MP generate dependency files so make doesn't need to rebuild the whole package every time
-CFLAGS := -MMD -MP -Wall -Ofast
+CFLAGS := -MMD -MP -Wall -Ofast -I$(INCLUDEDIR)
 
-OBJDIR ::= obj
-
-SRCS := $(wildcard *.c)
-OBJS := $(SRCS:%.c=$(OBJDIR)/%.o)
+SRCS := $(wildcard $(SRCDIR)/*.c)
+OBJS := $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DEPS := $(OBJS:.o=.d)
-HEADERS := $(wildcard *.h)
 
 #Compile everything
 .PHONY: all
@@ -24,7 +24,7 @@ $(TARGET): $(OBJS)
 #Create obj files from their srcs
 # also depends on the "HEADERS" files
 # $< = first dependency
-$(OBJDIR)/%.o: %.c $(OBJDIR) $(HEADERS)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR)
 	$(CC) $(CFLAGS) -c $<	-o $@
 
 #Create a directory for the object files
