@@ -1,8 +1,13 @@
-#include "headers.h"
+#include "utils.h"
+#include "dictionary.h"
+#include "tables.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 
-
-extern Dict words;
+extern struct Dict words;
 
 //logging
 struct stat {
@@ -88,7 +93,7 @@ int setSaveFile(const char *path){
 	return 0;
 }
 
-void writeTree(Node *node, FILE *fp){
+void writeTree(struct Node *node, FILE *fp){
 	if(node == NULL) return;
 	
 	writeTree(node->left, fp);
@@ -97,13 +102,13 @@ void writeTree(Node *node, FILE *fp){
 	writeTree(node->right, fp);
 }
 
-long double treeSize(Node *node){
+long double treeSize(struct Node *node){
 	if(node == NULL) return 0;
 	
 	return treeSize(node->left) + 1 + treeSize(node->right);
 }
 
-void saveProgress(int answer, double* total_elims, Node *tree[]){
+void saveProgress(int answer, double* total_elims, struct Node *tree[]){
 	FILE *fp;
 	long double size;
 	double total_time = logging.times.offset + difftime(time(NULL), logging.times.start);
@@ -148,10 +153,10 @@ void saveProgress(int answer, double* total_elims, Node *tree[]){
 	fclose(fp);
 }
 
-Node *readTree(long double size, FILE *fp){
+struct Node *readTree(long double size, FILE *fp){
 	if(size == 0) return NULL;
 	
-	Node *node = malloc(sizeof(Node));
+	struct Node *node = malloc(sizeof(struct Node));
 	
 	long double remaining_size = size - 1,
 		left_size = floor(remaining_size / 2),
@@ -167,7 +172,7 @@ Node *readTree(long double size, FILE *fp){
 	return node;
 }
 
-struct prog loadProgress(double *total_elims, Node *tree[]){
+struct prog loadProgress(double *total_elims, struct Node *tree[]){
 	struct prog p, p_empty = {0, 0.0L, 0.0, 0L, 0L};
 	FILE *fp;
 	int guesses_len;
@@ -217,7 +222,7 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 		tree[i] = readTree(size, fp);
 	}
 	
-	//ensure averything was read
+	//ensure everything was read
 	if(ferror(fp) || feof(fp)){
 		if(ferror(fp)){
 			char message[200];
@@ -244,9 +249,9 @@ struct prog loadProgress(double *total_elims, Node *tree[]){
 
 
 
-void showDataA(const char *word, const DataA *data){
+void showDataA(const char *word, const struct DataA *data){
 	int bits, letters = data->letters;
-	const DataLA *letter_data = data->letter_data;
+	const struct DataLA *letter_data = data->letter_data;
 
 	printf("%s\n", word);
 
@@ -263,11 +268,11 @@ void showDataA(const char *word, const DataA *data){
 	}
 }
 
-void printDataS(const DataS *data, FILE *fp){
+void printDataS(const struct DataS *data, FILE *fp){
 	printData(data->letters, data->letter_data, data->bad_letters, fp);
 }
 
-void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp){
+void printData(int letters, const struct DataL *letter_data, int bad_letters, FILE *fp){
 	int bits;
 	fprintf(fp, "L AMNT\tCAP\tK_POS\tB_POS\n");
 	for(int c='a'; letters; c++, letters>>=1){
@@ -294,14 +299,14 @@ void printData(int letters, const DataL *letter_data, int bad_letters, FILE *fp)
 }
 
 
-void saveTree(Node *tree[]){
+void saveTree(struct Node *tree[]){
 	FILE *fp = fopen("data/tree.txt", "w");
 	for(int i=0; i<=WORDLEN; i++)
 		printTree(tree[i], fp);
 	fclose(fp);
 }
 
-void printTree(Node *node, FILE *fp){
+void printTree(struct Node *node, FILE *fp){
 	if(node == NULL) return;
 
 	printTree(node->left, fp);

@@ -1,13 +1,27 @@
-#include "headers.h"
+#include "dictionary.h"
+#include "tables.h"
+#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 //write tree test to file for large testing samples
 
-extern Dict words;
+void test(void);
+void testSimplify(struct DataS *);
+void testElimsTable(void);
+
+extern struct Dict words;
+
+int main() {
+	test();
+	testElimsTable();
+}
 
 void test(){
 	char *word;
 	int n;
-	DataA ans_data;
+	struct DataA ans_data;
 
 	printf("Testing...\n");
 
@@ -53,7 +67,7 @@ void test(){
 	printf("Testing 'simplify':\n");
 	//test already simple data
 	printf("no change\n");
-	DataS data1 = {1<<('l'-'a') | 1<<('o'-'a'), 1<<('e'-'a') | 1<<('h'-'a'),
+	struct DataS data1 = {1<<('l'-'a') | 1<<('o'-'a'), 1<<('e'-'a') | 1<<('h'-'a'),
 			{{1|CAPPED, 8, 8},
 			{1, 0, 7}}};
 	testSimplify(&data1);
@@ -61,7 +75,7 @@ void test(){
 	//test each inference alone
 	//capped:2 & bas_pos:3
 	printf("capped:2 & bad_pos:3\n");
-	DataS data2 = data1;
+	struct DataS data2 = data1;
 	data2.letter_data[1].amount = 4; //not capped
 	data2.letter_data[1].known_pos = 23;
 	data2.letter_data[1].bad_pos = 0x1F;
@@ -90,7 +104,7 @@ void test(){
 	//Test genDataTable
 	printf("Testing data table functions:\n");
 	char *ans = getWord(rand()%words.answers.len, words.answers);
-	DataS *d_table = malloc(words.guesses.len * sizeof (DataS));
+	struct DataS *d_table = malloc(words.guesses.len * sizeof (struct DataS));
 	genDataTable(ans, words.guesses, d_table);
 	n = rand()%words.guesses.len;
 	word = getWord(n, words.guesses);
@@ -104,7 +118,7 @@ void test(){
 	printf("\n\n");
 }
 
-void testSimplify(DataS *data){
+void testSimplify(struct DataS *data){
 	printDataS(data, stdout);
 	simplify(data->letter_data, weight(data->letters));
 	printDataS(data, stdout);
@@ -117,8 +131,8 @@ void testElimsTable(){
 	FILE *outfile;
 	char *ans;
 	int g1, g2, elims;
-	DataS *d_table = malloc(words.guesses.len * sizeof (DataS));
-	Node *e_tree[WORDLEN+1];
+	struct DataS *d_table = malloc(words.guesses.len * sizeof (struct DataS));
+	struct Node *e_tree[WORDLEN+1];
 	for(int i=0; i<WORDLEN+1; i++) e_tree[i] = NULL;
 
 	printf("\n\nTesting elims table...\n\n");

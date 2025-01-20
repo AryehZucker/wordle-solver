@@ -1,15 +1,17 @@
-#include "headers.h"
+#include "dictionary.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-Dict words;
+struct Dict words;
 
 void loadDict(const char *ans_words_path, const char *guess_words_path){
 	words.answers = loadWordList(ans_words_path);	
 	words.guesses = loadWordList(guess_words_path);
 }
 
-WordList loadWordList(const char *path){
+struct WordList loadWordList(const char *path){
 	FILE *fp;
-	WordList wl;
+	struct WordList wl;
 	int n, word_count = 0;
 	long filesize;
 
@@ -46,7 +48,7 @@ WordList loadWordList(const char *path){
 }
 
 //return a pointer to the first letter of the word in the WordList
-char *getWord(int index, WordList wl){
+char *getWord(int index, struct WordList wl){
 	if(index >= wl.len) return NULL;
 	return wl.words+(index*(WORDLEN+1));
 }

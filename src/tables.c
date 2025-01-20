@@ -27,15 +27,18 @@
  *If a data entry that you're looking for doesn't exist, create it.
  */
 
-#include "headers.h"
+#include "tables.h"
+#include "dictionary.h"
+#include "utils.h"
+#include <stdlib.h>
 
 
-extern Dict words;
-DataA *answers_data;
+extern struct Dict words;
+struct DataA *answers_data;
 
-void wordToData(const char *word, DataA *data){
-	static DataLA letter_data[26];
-	DataLA *ldataptr;
+void wordToData(const char *word, struct DataA *data){
+	static struct DataLA letter_data[26];
+	struct DataLA *ldataptr;
 
 	//initialize data to none
 	for(int i=0; i<26; i++)
@@ -60,16 +63,16 @@ void wordToData(const char *word, DataA *data){
 
 
 //generate a list of DataS, where the positions correspond to a word
-void genDataTable(const char *ans, WordList guesses, DataS table[]){
+void genDataTable(const char *ans, struct WordList guesses, struct DataS table[]){
 	for(int i=0; i < guesses.len; i++)
 		genData(getWord(i, guesses), ans, table+i);
 }
 
 //generate the data for the given guess and ans
-void genData(const char *guess, const char *ans, DataS *data){
+void genData(const char *guess, const char *ans, struct DataS *data){
 	char letter;
-	static DataL letter_data[26];
-	DataL *ldataptr;
+	static struct DataL letter_data[26];
+	struct DataL *ldataptr;
 	int guess_count, ans_count;
 
 	data->bad_letters = 0;
@@ -124,10 +127,10 @@ void genData(const char *guess, const char *ans, DataS *data){
 
 
 
-int getComboElims(DataS *data1, DataS *data2, Node *tree[]){
+int getComboElims(struct DataS *data1, struct DataS *data2, struct Node *tree[]){
 	int *elimsptr;
 	static unsigned int data_hash[HASH_LEN];
-	DataC combo_data;
+	struct DataC combo_data;
 
 	combine(data1, data2, &combo_data);
 	hashData(&combo_data, data_hash);
@@ -147,11 +150,11 @@ int getComboElims(DataS *data1, DataS *data2, Node *tree[]){
 
 
 //combine 'data1' and 'data2' into one data object, 'combo_data'
-void combine(const DataS *data1, const DataS *data2, DataC *combo_data){
+void combine(const struct DataS *data1, const struct DataS *data2, struct DataC *combo_data){
 	unsigned int d1_letters, d2_letters, c_letters;
 	//pointers to letter_data that we're up to
-	DataL *combo_ldp;
-	const DataL *d1_ldp, *d2_ldp;
+	struct DataL *combo_ldp;
+	const struct DataL *d1_ldp, *d2_ldp;
 
 	//combine good and bad letters
 	combo_data->letters = data1->letters | data2->letters;
@@ -189,9 +192,9 @@ void combine(const DataS *data1, const DataS *data2, DataC *combo_data){
 }
 
 
-int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]){
+int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[]){
 	int i;
-	register Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
+	register struct Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
 
 	while(*nodeptr != NULL){
 		for(i=0; data_hash[i] == (*nodeptr)->hash[i]; i++){
@@ -201,7 +204,7 @@ int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]){
 		nodeptr = (data_hash[i]<(*nodeptr)->hash[i]) ? &(*nodeptr)->left : &(*nodeptr)->right;
 	}
 
-	*nodeptr = malloc(sizeof (Node));
+	*nodeptr = malloc(sizeof (struct Node));
 	for(i=0; i<HASH_LEN; i++) (*nodeptr)->hash[i] = data_hash[i];
 	(*nodeptr)->elims = EMPTY;
 	(*nodeptr)->left = (*nodeptr)->right = NULL;
@@ -210,7 +213,7 @@ int *searchTree(const unsigned int *data_hash, const int len, Node *tree[]){
 }
 
 
-void freeNode(Node *node){
+void freeNode(struct Node *node){
 	if(node == NULL)
 		return;
 	
@@ -219,7 +222,7 @@ void freeNode(Node *node){
 	free(node);
 }
 
-void freeTree(Node *tree[], int size){
+void freeTree(struct Node *tree[], int size){
 	for(int i=0; i<size; i++)
 		freeNode(tree[i]);
 }
@@ -228,7 +231,7 @@ void freeTree(Node *tree[], int size){
 
 
 void init_ans_data(){
-	answers_data = (DataA *) malloc((words.answers.len+1) * sizeof (DataA));
+	answers_data = (struct DataA *) malloc((words.answers.len+1) * sizeof (struct DataA));
 	for(int i=0; i<words.answers.len; i++)
 		wordToData(getWord(i, words.answers), &answers_data[i]);
 	answers_data[words.answers.len].letters = 0;
@@ -238,8 +241,8 @@ void free_ans_data(){
 	free(answers_data);
 }
 
-int countElims(const DataC *data){
-	DataA *ans_data = answers_data;
+int countElims(const struct DataC *data){
+	struct DataA *ans_data = answers_data;
 	int elims = 0;
 	while(ans_data->letters){
 		if(!fits(data, ans_data++))
@@ -249,14 +252,14 @@ int countElims(const DataC *data){
 }
 
 
-int fits(const DataC *guess_data, const DataA *ans_data){
+int fits(const struct DataC *guess_data, const struct DataA *ans_data){
 	//test that the letters don't contradict
 	if(guess_data->letters & ~ans_data->letters || guess_data->bad_letters & ans_data->letters)
 		return 0;
 
 	else {
-		const DataL *gldp  = guess_data->letter_data;	//pointer to the guess letter_data that we're upto
-		const DataLA *aldp =   ans_data->letter_data;	//pointer to the answer letter_data that we're upto
+		const struct DataL *gldp  = guess_data->letter_data;	//pointer to the guess letter_data that we're upto
+		const struct DataLA *aldp =   ans_data->letter_data;	//pointer to the answer letter_data that we're upto
 
 		int guess_letters = guess_data->letters,
 		    ans_letters   =   ans_data->letters;
@@ -292,7 +295,7 @@ int fits(const DataC *guess_data, const DataA *ans_data){
 }
 
 
-void simplify(DataL *letter_data, const int data_len){
+void simplify(struct DataL *letter_data, const int data_len){
 	int i, changed, total_amount, taken = 0;
 
 	do{
@@ -351,7 +354,7 @@ void simplify(DataL *letter_data, const int data_len){
 
 
 
-void hashData(const DataC *data, unsigned int *buffer){
+void hashData(const struct DataC *data, unsigned int *buffer){
 	int i, len = weight(data->letters);
 	unsigned int tmp;
 
