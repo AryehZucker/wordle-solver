@@ -1,8 +1,8 @@
 #ifndef TABLES_H
 #define TABLES_H
 
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#define MAX(a,b) ((a)>(b)?(a):(b))
 
 //letters + bad_letters + ceil(5/2) letters
 #define HASH_LEN 5

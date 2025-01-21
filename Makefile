@@ -3,12 +3,12 @@ SRCDIR ::= src
 OBJDIR ::= obj
 INCLUDEDIR ::= include
 
-CC := gcc
+CXX := g++
 # -MMD & -MP generate dependency files so make doesn't need to rebuild the whole package every time
-CFLAGS := -MMD -MP -Wall -Ofast -I$(INCLUDEDIR)
+CXXFLAGS := -MMD -MP -Wall -Ofast -I$(INCLUDEDIR)
 
-SRCS := $(wildcard $(SRCDIR)/*.c)
-OBJS := $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+SRCS := $(wildcard $(SRCDIR)/*.cpp)
+OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
 #Compile everything
@@ -19,13 +19,13 @@ all: $(TARGET)
 # $@ = left side of the ":"
 # $^ = right side of the ":"
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #Create obj files from their srcs
 # also depends on the "HEADERS" files
 # $< = first dependency
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR)
-	$(CC) $(CFLAGS) -c $<	-o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $<	-o $@
 
 #Create a directory for the object files
 $(OBJDIR):

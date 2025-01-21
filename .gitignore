@@ -2,3 +2,5 @@ data/
 obj/
 wordle-solver
 save.dat
+.vscode/
+TODO.md

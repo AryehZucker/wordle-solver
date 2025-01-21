@@ -31,6 +31,7 @@
 #include "dictionary.h"
 #include "utils.h"
 #include <stdlib.h>
+#include <math.h>
 
 
 extern struct Dict words;
@@ -102,7 +103,7 @@ void genData(const char *guess, const char *ans, struct DataS *data){
 		}
 
 		//find "amount"
-		letter_data[i].amount = min(guess_count, ans_count);
+		letter_data[i].amount = MIN(guess_count, ans_count);
 		//find "capped"
 		if(guess_count > letter_data[i].amount){
 			if(ans_count == 0)	//the letter is not in the ans
@@ -173,7 +174,7 @@ void combine(const struct DataS *data1, const struct DataS *data2, struct DataC 
 	while(d1_letters || d2_letters || c_letters){
 		if(c_letters & 1){
 			//this automatically acounts for CAPPED
-			combo_ldp->amount = max(d1_ldp->amount, d2_ldp->amount);
+			combo_ldp->amount = MAX(d1_ldp->amount, d2_ldp->amount);
 			combo_ldp->known_pos = d1_ldp->known_pos | d2_ldp->known_pos;
 			combo_ldp->bad_pos = d1_ldp->bad_pos & d2_ldp->bad_pos;
 			d1_ldp++, d2_ldp++, combo_ldp++;
@@ -194,7 +195,7 @@ void combine(const struct DataS *data1, const struct DataS *data2, struct DataC 
 
 int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[]){
 	int i;
-	register struct Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
+	struct Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
 
 	while(*nodeptr != NULL){
 		for(i=0; data_hash[i] == (*nodeptr)->hash[i]; i++){
@@ -204,7 +205,7 @@ int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[
 		nodeptr = (data_hash[i]<(*nodeptr)->hash[i]) ? &(*nodeptr)->left : &(*nodeptr)->right;
 	}
 
-	*nodeptr = malloc(sizeof (struct Node));
+	*nodeptr = (struct Node *) malloc(sizeof (struct Node));
 	for(i=0; i<HASH_LEN; i++) (*nodeptr)->hash[i] = data_hash[i];
 	(*nodeptr)->elims = EMPTY;
 	(*nodeptr)->left = (*nodeptr)->right = NULL;
@@ -308,7 +309,7 @@ void simplify(struct DataL *letter_data, const int data_len){
 
 		for(i=0; i<data_len; i++){
 			//capped:3 & known_pos:2
-			if((letter_data[i].amount & ~CAPPED) == weight(letter_data[i].bad_pos)){
+			if((letter_data[i].amount & ~CAPPED) == (unsigned int) weight(letter_data[i].bad_pos)){
 				if( !(letter_data[i].amount & CAPPED)){
 					letter_data[i].amount |= CAPPED;
 					changed = 1;

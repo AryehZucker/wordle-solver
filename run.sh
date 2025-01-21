@@ -1,7 +1,7 @@
 #! /bin/bash
 
-ANSWERS=words/answers-shuffle.txt
-GUESSES=words/guesses-shuffle.txt
+ANSWERS=words/answers.txt
+GUESSES=words/guesses.txt
 
 if [ $1 ]; then
 	GUESSES_SHORT=words/guesses-short-shuffle.txt

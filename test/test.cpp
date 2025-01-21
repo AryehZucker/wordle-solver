@@ -1,7 +1,7 @@
 #include "dictionary.h"
 #include "tables.h"
 #include "utils.h"
-#include <stdio.h>
+// #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -104,7 +104,7 @@ void test(){
 	//Test genDataTable
 	printf("Testing data table functions:\n");
 	char *ans = getWord(rand()%words.answers.len, words.answers);
-	struct DataS *d_table = malloc(words.guesses.len * sizeof (struct DataS));
+	struct DataS *d_table = (struct DataS *) (words.guesses.len * sizeof (struct DataS));
 	genDataTable(ans, words.guesses, d_table);
 	n = rand()%words.guesses.len;
 	word = getWord(n, words.guesses);
@@ -131,7 +131,7 @@ void testElimsTable(){
 	FILE *outfile;
 	char *ans;
 	int g1, g2, elims;
-	struct DataS *d_table = malloc(words.guesses.len * sizeof (struct DataS));
+	struct DataS *d_table = (struct DataS *) malloc(words.guesses.len * sizeof (struct DataS));
 	struct Node *e_tree[WORDLEN+1];
 	for(int i=0; i<WORDLEN+1; i++) e_tree[i] = NULL;
 

@@ -156,7 +156,7 @@ void saveProgress(int answer, double* total_elims, struct Node *tree[]){
 struct Node *readTree(long double size, FILE *fp){
 	if(size == 0) return NULL;
 	
-	struct Node *node = malloc(sizeof(struct Node));
+	struct Node *node = (struct Node *) malloc(sizeof(struct Node));
 	
 	long double remaining_size = size - 1,
 		left_size = floor(remaining_size / 2),

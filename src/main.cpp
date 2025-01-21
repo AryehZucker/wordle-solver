@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 		if(total_elims[i] > most_elims)
 			most_elims = total_elims[i];
 
-	int j = 0;
+	unsigned int j = 0;
 	for(int i=0; i<words.guesses.len && j<(sizeof(best_words)/sizeof(int)); i++)
 		if(total_elims[i] == most_elims)
 			best_words[j++] = i;
