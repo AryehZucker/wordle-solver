@@ -1,46 +1,43 @@
 #include "dictionary.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <fstream>
 
 struct Dict words;
 
 void loadDict(const char *ans_words_path, const char *guess_words_path){
-	words.answers = loadWordList(ans_words_path);	
+	words.answers = loadWordList(ans_words_path);
 	words.guesses = loadWordList(guess_words_path);
 }
 
 struct WordList loadWordList(const char *path){
-	FILE *fp;
+	std::ifstream file(path, std::ios::binary);
 	struct WordList wl;
-	int n, word_count = 0;
+	int word_count = 0;
 	long filesize;
 
-	fp = fopen(path, "r");
-	if(fp == NULL){
-		char message[100];
-		sprintf(message, "Error opening %s", path);
-		perror(message);
+	if(!file.is_open()){
+		std::cerr << "Error opening " << path << ": " << std::strerror(errno) << std::endl;
 		wl.len = -1;
 		return wl;
 	}
 
-	fseek(fp, 0L, SEEK_END);
-	filesize = ftell(fp);
-	rewind(fp);
+	file.seekg(0, std::ios::end);
+	filesize = file.tellg();
+	file.seekg(0, std::ios::beg);
 
-	wl.words = (char *) malloc(filesize);
+	wl.words = new char[filesize];
 
-	//note: "%5c\n" is 5 because WORDLEN = 5. if WORDLEN changes, change 5 to match.
-	for(char *word = wl.words; (n = fscanf(fp, "%5c\n", word)) == 1; word += WORDLEN+1){
+	for(char *word = wl.words; file >> word; word += WORDLEN+1){
 		word_count++;
-		word[WORDLEN] = '\0';
+		if(file.fail() || strlen(word) != 5){
+			std::cerr << "Error: data corruption in " << path << std::endl;
+			wl.len = -1;
+			return wl;
+		}
 	}
-	fclose(fp);
-	if(n == 0){
-		fprintf(stderr, "Error: data corruption in %s\n", path);
-		wl.len = -1;
-		return wl;
-	}
+	file.close();
 
 	wl.len = word_count;
 

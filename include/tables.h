@@ -57,10 +57,10 @@ void genData(const char *guess, const char *ans, struct DataS *data);
 int getComboElims(struct DataS *data1, struct DataS *data2, struct Node *tree[]);
 void combine(const struct DataS *data1, const struct DataS *data2, struct DataC *combo_data);
 int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[]);
-void freeTree(struct Node *tree[], int size);
+void deleteTree(struct Node *tree[], int size);
 
 void init_ans_data(void);
-void free_ans_data(void);
+void delete_ans_data(void);
 int countElims(const struct DataC *data);
 int fits(const struct DataC *data, const struct DataA *ans_data);
 

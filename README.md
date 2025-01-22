@@ -1,6 +1,6 @@
 # Best First Guess Finder for Wordle
 
-This project is a C program designed to find the best first guess for the game **Wordle** by analyzing word combinations and their eliminations. It calculates which guesses can eliminate the most possible answers when paired together, determining the optimal starting word(s).
+This project is a C++ program designed to find the best first guess for the game **Wordle** by analyzing word combinations and their eliminations. It calculates which guesses can eliminate the most possible answers when paired together, determining the optimal starting word(s).
 
 ## How It Works
 

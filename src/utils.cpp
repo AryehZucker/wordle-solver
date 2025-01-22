@@ -1,10 +1,12 @@
-#include "utils.h"
+#include "utils.hpp"
 #include "dictionary.h"
 #include "tables.h"
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <cmath>
+#include <cstring>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 
 
 extern struct Dict words;
@@ -25,8 +27,8 @@ void initLogging(struct prog p){
 	logging.times.init = logging.times.search = logging.times.count = 0;
 	logging.times.start = logging.times.last_update = time(NULL);
 
-	printf("%d answers\t%d guesses\n", words.answers.len, words.guesses.len);
-	printf("Total runs: %.0Lf\n", logging.total_runs);
+	std::cout << words.answers.len << " answers\t" << words.guesses.len << " guesses" << std::endl;
+	std::cout << "Total runs: " << std::fixed << std::setprecision(0) << logging.total_runs << std::endl;
 }
 
 void clearLookups(){
@@ -62,22 +64,26 @@ void logLookup(int success){
 
 
 void printLogging(){
-	long double runs = logging.runs, rcompleted;
+	long double runs = logging.runs, proportion_completed;
 	time_t now = time(NULL);
 	double total_time = logging.times.offset + difftime(now,logging.times.start);
 
 	if(difftime(now, logging.times.last_update) < 1) return;
 
 	logging.times.last_update = now;
-	rcompleted = logging.runs/logging.total_runs; //ratio of completed to total
-	putchar('\r');
-	printf("total: %.4Lfms\t\t", 1000*(now-logging.times.start)/runs);
-	printf("init: %.4Lfms|srch: %.4Lfms|cnt: %.4Lfms\t",
-		1000*logging.times.init/runs, 1000*logging.times.search/runs, 1000*logging.times.count/runs);
-	printf("%.2f%% suc\t", 100.0*logging.lookups.successes/logging.lookups.total);
-	printf("[%.2Lf%% in %dm%ds; ", 100*rcompleted, (int)total_time/60, (int)total_time%60);
-	printf("left: %.1Lf mins]\t", total_time*(1/rcompleted-1)/60);
-	fflush(stdout);
+	proportion_completed = logging.runs/logging.total_runs; //ratio of completed to total
+	std::cout << "\r";
+	std::cout << std::fixed << std::setprecision(4);
+	std::cout << "total: " << 1000*(now-logging.times.start)/runs << "ms\t\t";
+	std::cout << "init: " << 1000*logging.times.init/runs << "ms|";
+	std::cout << "srch: " << 1000*logging.times.search/runs << "ms|";
+	std::cout << "cnt: " << 1000*logging.times.count/runs << "ms\t";
+	std::cout << std::setprecision(2);
+	std::cout << (100.0*logging.lookups.successes/logging.lookups.total) << "% suc\t";
+	std::cout << "[" << 100*proportion_completed << "% in " << (int)total_time/60 << "m" << (int)total_time%60 << "s; ";
+	std::cout << std::setprecision(1);
+	std::cout << "left: " << (total_time*(1/proportion_completed-1)/60) << " mins]\t";
+	std::cout << std::flush;
 }
 
 
@@ -93,121 +99,115 @@ int setSaveFile(const char *path){
 	return 0;
 }
 
-void writeTree(struct Node *node, FILE *fp){
+void writeTree(struct Node *node, std::ostream &file){
 	if(node == NULL) return;
-	
-	writeTree(node->left, fp);
-	fwrite(node->hash, sizeof(unsigned int), HASH_LEN, fp);
-	fwrite(&node->elims, sizeof(int), 1, fp);
-	writeTree(node->right, fp);
+
+	writeTree(node->left, file);
+	file.write((char *)(node->hash), sizeof(unsigned int) * HASH_LEN);
+	file.write((char *)(&node->elims), sizeof(int));
+	writeTree(node->right, file);
 }
 
 long double treeSize(struct Node *node){
 	if(node == NULL) return 0;
-	
+
 	return treeSize(node->left) + 1 + treeSize(node->right);
 }
 
 void saveProgress(int answer, double* total_elims, struct Node *tree[]){
-	FILE *fp;
+	std::ofstream file(save_path, std::ios::binary);
 	long double size;
 	double total_time = logging.times.offset + difftime(time(NULL), logging.times.start);
 
-	if((fp = fopen(save_path, "wb")) == NULL){
-		char message[200];
-		sprintf(message, "Error opening %s", save_path);
-		perror(message);
+	if(!file.is_open()){
+		std::cerr << "Error opening " << save_path << ": " << std::strerror(errno) << std::endl;
 		exit(1);
 	}
 
 	//write logging info
-	fwrite(&logging.runs, sizeof (logging.runs), 1, fp);
-	fwrite(&total_time, sizeof (total_time), 1, fp);
-	fwrite(&logging.lookups.successes, sizeof (logging.lookups.successes), 1, fp);
-	fwrite(&logging.lookups.total, sizeof (logging.lookups.total), 1, fp);
-	
+	file.write((char *)&logging.runs, sizeof (logging.runs));
+	file.write((char *)&total_time, sizeof (total_time));
+	file.write((char *)&logging.lookups.successes, sizeof (logging.lookups.successes));
+	file.write((char *)&logging.lookups.total, sizeof (logging.lookups.total));
+
 	//write which ans & guess we're upto
-	fwrite(&answer, sizeof (answer), 1, fp);
+	file.write((char *)&answer, sizeof (answer));
 
 	//write total_elims
-	fwrite(&words.guesses.len, sizeof (words.guesses.len), 1, fp);
-	fwrite(total_elims, sizeof (double), words.guesses.len, fp);
+	file.write((char *)&words.guesses.len, sizeof (words.guesses.len));
+	file.write((char *)total_elims, sizeof (double) * words.guesses.len);
 
 	//write elims tree
 	for(int i=0; i<6; i++){
 		size = treeSize(tree[i]);
-		fwrite(&size, sizeof (size), 1, fp);
-		writeTree(tree[i], fp);
+		file.write((char *)&size, sizeof (size));
+		writeTree(tree[i], file);
 	}
-	
+
 	//ensure everything was written
-	if(ferror(fp)){
-		char message[200];
-		sprintf(message, "Error writing to file %s", save_path);
-		perror(message);
-		fclose(fp);
+	if(file.fail()){
+		std::cerr << "Error writing to file " << save_path << ": " << std::strerror(errno) << std::endl;
+		file.close();
 		exit(1);
 	}
-	
+
 	//close the file
-	fclose(fp);
+	file.close();
 }
 
-struct Node *readTree(long double size, FILE *fp){
+struct Node *readTree(long double size, std::ifstream &file){
 	if(size == 0) return NULL;
-	
-	struct Node *node = (struct Node *) malloc(sizeof(struct Node));
-	
+
+	struct Node *node = new struct Node;
+
 	long double remaining_size = size - 1,
 		left_size = floor(remaining_size / 2),
 		right_size = remaining_size - left_size;
-	
-	node->left = readTree(left_size, fp);
-	
-	fread(node->hash, sizeof(unsigned int), HASH_LEN, fp);
-	fread(&node->elims, sizeof(int), 1, fp);
-	
-	node->right = readTree(right_size, fp);
-	
+
+	node->left = readTree(left_size, file);
+
+	file.read((char *)node->hash, sizeof(unsigned int) * HASH_LEN);
+	file.read((char *)&node->elims, sizeof(int));
+
+	node->right = readTree(right_size, file);
+
 	return node;
 }
 
 struct prog loadProgress(double *total_elims, struct Node *tree[]){
 	struct prog p, p_empty = {0, 0.0L, 0.0, 0L, 0L};
-	FILE *fp;
+	std::ifstream file(save_path, std::ios::binary);
 	int guesses_len;
 
-	if((fp = fopen(save_path, "rb")) == NULL){
-		printf("No saved data found\n");
+	if(!file.is_open()){
+		std::cout << "No saved data found" << std::endl;
 		return p_empty;
 	}
-	
-	printf("Found saved data\n");
+
+	std::cout << "Found saved data" <<std::endl;
 
 	//read logging info
-	fread(&p.runs, sizeof (p.runs), 1, fp);
-	fread(&p.time_offset, sizeof (p.time_offset), 1, fp);
-	fread(&p.lookup_successes, sizeof (p.lookup_successes), 1, fp);
-	fread(&p.total_lookups, sizeof (p.total_lookups), 1, fp);
-	
-	//printf("%.0Lf %ld %ld\n", p.runs, p.lookup_successes, p.total_lookups);	//DEBUG
-	
+	file.read((char *)&p.runs, sizeof (p.runs));
+	file.read((char *)&p.time_offset, sizeof (p.time_offset));
+	file.read((char *)&p.lookup_successes, sizeof (p.lookup_successes));
+	file.read((char *)&p.total_lookups, sizeof (p.total_lookups));
+
 	//read which ans & guess we're upto
-	fread(&p.answer, sizeof (p.answer), 1, fp);
-	
+	file.read((char *)&p.answer, sizeof (p.answer));
+
 	//read in total_elims
-	fread(&guesses_len, sizeof (guesses_len), 1, fp);
+	file.read((char *)&guesses_len, sizeof (guesses_len));
 	if(guesses_len != words.guesses.len){
-		fprintf(stderr, "Error reading from file %s: amount of data does not match\n", save_path);
-		fprintf(stderr, "Starting calculations from the beginning.\n");
-		fclose(fp);
+		std::cerr << "Error reading from file " << save_path << ": amount of data does not match" << std::endl;
+		std::cerr << "Starting calculations from the beginning." << std::endl;
+		file.close();
 		return p_empty;
 	}
-	fread(total_elims, sizeof (double), words.guesses.len, fp);
-	if(feof(fp)){
-		fprintf(stderr, "Error reading from file %s: EOF encountered while parsing file\n", save_path);
-		fprintf(stderr, "Starting calculations from the beginning.\n");
-		fclose(fp);
+	file.read((char *)total_elims, sizeof (double) * words.guesses.len);
+	if(file.eof()){
+		std::cerr << "Error reading from file " << save_path << ": EOF encountered while parsing file" << std::endl;
+		std::cerr << "Starting calculations from the beginning." << std::endl;
+		file.close();
 		memset(total_elims, 0, sizeof (double) * words.guesses.len);
 		return p_empty;
 	}
@@ -216,32 +216,30 @@ struct prog loadProgress(double *total_elims, struct Node *tree[]){
 	long double size;
 	for(int i=0; i<6; i++){
 		//find the size of this section of the tree
-		fread(&size, sizeof size, 1, fp);
-		
+		file.read((char *)&size, sizeof size);
+
 		//generate a tree of that size and load it in
-		tree[i] = readTree(size, fp);
+		tree[i] = readTree(size, file);
 	}
-	
+
 	//ensure everything was read
-	if(ferror(fp) || feof(fp)){
-		if(ferror(fp)){
-			char message[200];
-			sprintf(message, "Error reading from file %s", save_path);
-			perror(message);
+	if(file.fail() || file.eof()){
+		if(file.fail()){
+			std::cerr << "Error reading from file  " << save_path << ": " << std::strerror(errno) << std::endl;
 		}
 		else{
-			fprintf(stderr, "Error reading from file %s: EOF encountered while parsing file\n", save_path);
+			std::cerr << "Error reading from file " << save_path << ": EOF encountered while parsing file" << std::endl;
 		}
-		fprintf(stderr, "Starting calculations from the beginning.\n");
-		
+		std::cerr << "Starting calculations from the beginning." << std::endl;
+
 		p = p_empty;
 		memset(total_elims, 0, sizeof (double) * words.guesses.len);
-		freeTree(tree, 6);
+		deleteTree(tree, 6);
 		for(int i=0; i<6; i++) tree[i] = NULL;
 	}
-	
+
 	//close the file
-	fclose(fp);
+	file.close();
 
 	return p;
 }
@@ -253,70 +251,72 @@ void showDataA(const char *word, const struct DataA *data){
 	int bits, letters = data->letters;
 	const struct DataLA *letter_data = data->letter_data;
 
-	printf("%s\n", word);
+	std::cout << word << std::endl;
 
 	for(char c='a'; letters; c++, letters>>=1){
 		if(letters & 1){
-			printf("  %c - %d ", c, (int) letter_data->amount);
+			std::cout << "  " << c << " - " << (int) letter_data->amount << " ";
 			bits = letter_data->pos;
 			for(int j=0; j<WORDLEN; j++)
-				printf("%d", (bits&(1<<j))>>j);
-			printf("\n");
+				std::cout << ((bits&(1<<j))>>j);
+			std::cout << std::endl;
 
 			letter_data++;
 		}
 	}
 }
 
-void printDataS(const struct DataS *data, FILE *fp){
-	printData(data->letters, data->letter_data, data->bad_letters, fp);
+void printDataS(const struct DataS *data, std::ostream &file){
+	printData(data->letters, data->letter_data, data->bad_letters, file);
 }
 
-void printData(int letters, const struct DataL *letter_data, int bad_letters, FILE *fp){
+void printData(int letters, const struct DataL *letter_data, int bad_letters, std::ostream &file){
 	int bits;
-	fprintf(fp, "L AMNT\tCAP\tK_POS\tB_POS\n");
+	file << "L AMNT\tCAP\tK_POS\tB_POS" << std::endl;
 	for(int c='a'; letters; c++, letters>>=1){
 		if(!(letters & 1)) continue;
 
-		fprintf(fp, "%c ", c);
-		fprintf(fp, "%d\t", (int) letter_data->amount&~CAPPED);
-		fprintf(fp, "%c\t", (letter_data->amount&CAPPED?'T':'F'));
+		file << c << " ";
+		file << (int)(letter_data->amount&~CAPPED) << "\t";
+		file << (letter_data->amount&CAPPED?'T':'F') << "\t";
 		bits = letter_data->known_pos;
 		for(int j=0; j<WORDLEN; j++)
-			fprintf(fp, "%d", (bits&(1<<j))>>j);
-		fprintf(fp, "\t");
+			file << ((bits&(1<<j))>>j);
+		file << "\t";
 		bits = letter_data->bad_pos;
 		for(int j=0; j<WORDLEN; j++)
-			fprintf(fp, "%d", (bits&(1<<j))>>j);
-		fprintf(fp, "\n");
+			file << ((bits&(1<<j))>>j);
+		file << std::endl;
 		letter_data++;
 	}
 
-	fprintf(fp, "bad letters: ");
+	file << "bad letters: ";
 	for(int c='a'; bad_letters; c++, bad_letters>>=1)
-		if(bad_letters & 1) fprintf(fp, "%c", c);
-	fprintf(fp, "\n");
+		if(bad_letters & 1) file << c;
+	file << std::endl;
 }
 
 
 void saveTree(struct Node *tree[]){
-	FILE *fp = fopen("data/tree.txt", "w");
+	std::ofstream file("tree.txt");
 	for(int i=0; i<=WORDLEN; i++)
-		printTree(tree[i], fp);
-	fclose(fp);
+		printTree(tree[i], file);
+	file.close();
 }
 
-void printTree(struct Node *node, FILE *fp){
+void printTree(struct Node *node, std::ostream &file){
 	if(node == NULL) return;
 
-	printTree(node->left, fp);
+	printTree(node->left, file);
 
-	fprintf(fp, "%8x %-8x - ", node->hash[0], node->hash[1]);
+	file << std::setw(8) << std::hex << std::setfill('0') << node->hash[0] << " " << std::left << std::setw(8) << node->hash[1] << " - ";
 	for(int i=2; i<HASH_LEN; i++)
-		fprintf(fp, "%04x %04x ", node->hash[i]>>16, node->hash[i]&0xFFFF);
-	fprintf(fp, ": %d\n", node->elims);
+		file << std::setw(4) << std::hex << std::setfill('0') << (node->hash[i] >> 16)
+				<< " " << std::setw(4) << std::hex << std::setfill('0') << (node->hash[i] & 0xFFFF)
+				<< " ";
+	file << ": " << node->elims << std::endl;
 
-	printTree(node->right, fp);
+	printTree(node->right, file);
 }
 
 

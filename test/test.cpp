@@ -1,9 +1,7 @@
 #include "dictionary.h"
 #include "tables.h"
-#include "utils.h"
-// #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include "utils.hpp"
+#include <iostream>
 
 //write tree test to file for large testing samples
 
@@ -23,50 +21,50 @@ void test(){
 	int n;
 	struct DataA ans_data;
 
-	printf("Testing...\n");
+	std::cout << "Testing..." << std::endl;
 
 	srand(time(NULL));
 
 	//make sure a char is only one byte
-	printf("Char size: %ld byte(s)\n\n", sizeof (char));
-	printf("Int  size: %ld byte(s)\n\n", sizeof (int));
+	std::cout << "Char size: " << sizeof (char) << " byte(s)" << std::endl << std::endl;
+	std::cout << "Int  size: " << sizeof (int) << " byte(s)" << std::endl << std::endl;
 
 	//Test dictionary functions
-	printf("Testing Guess-Dict:\n");
+	std::cout << "Testing Guess-Dict:" << std::endl;
 	for(int i=0; i<3; i++){
 		n = rand()%words.guesses.len;
-		printf("%d:\t%s\n", n, getWord(n,words.guesses));
+		std::cout << n << ":\t" << getWord(n,words.guesses) << std::endl;
 	}
-	printf("\n");
+	std::cout << std::endl;
 
-	printf("Testing Ans-Dict:\n");
+	std::cout << "Testing Ans-Dict:" << std::endl;
 	for(int i=0; i<3; i++){
 		n = rand()%words.answers.len;
-		printf("%d:\t%s\n", n, getWord(n,words.answers));
+		std::cout << n << ":\t" << getWord(n,words.answers) << std::endl;
 	}
-	printf("\n\n");
+	std::cout << std::endl << std::endl;
 
 	//Test wordToData
-	printf("Testing 'wordToData':\n");
+	std::cout << "Testing 'wordToData':" << std::endl;
 	n = rand()%words.answers.len;
 	word = getWord(n, words.answers);
 	wordToData(word, &ans_data);
 	showDataA(word, &ans_data);
-	printf("\n\n");
+	std::cout << std::endl << std::endl;
 
 	//Test weight
-	printf("Testing 'weight':\n");
+	std::cout << "Testing 'weight':" << std::endl;
 	n = rand()%(1<<WORDLEN);
-	printf("weight of ");
+	std::cout << "weight of ";
 	for(int i=0; i<WORDLEN; i++)
-		printf("%d", (n&(1<<i))>>i);
-	printf(" = %d\n", weight(n));
-	printf("\n\n");
+		std::cout << ((n&(1<<i))>>i);
+	std::cout << " = " << weight(n) << std::endl;
+	std::cout << std::endl << std::endl;
 
 	//Test simplify
-	printf("Testing 'simplify':\n");
+	std::cout << "Testing 'simplify':" << std::endl;
 	//test already simple data
-	printf("no change\n");
+	std::cout << "no change" << std::endl;
 	struct DataS data1 = {1<<('l'-'a') | 1<<('o'-'a'), 1<<('e'-'a') | 1<<('h'-'a'),
 			{{1|CAPPED, 8, 8},
 			{1, 0, 7}}};
@@ -74,7 +72,7 @@ void test(){
 
 	//test each inference alone
 	//capped:2 & bas_pos:3
-	printf("capped:2 & bad_pos:3\n");
+	std::cout << "capped:2 & bad_pos:3" << std::endl;
 	struct DataS data2 = data1;
 	data2.letter_data[1].amount = 4; //not capped
 	data2.letter_data[1].known_pos = 23;
@@ -83,14 +81,14 @@ void test(){
 
 	/*
 	//capped:3 & known_pos:2
-	printf("capped:3 & known_pos:2\n");
+	std::cout << "capped:3 & known_pos:2" << std::endl;
 	DataS data3 = data1;
 	data3.letter_data[0].amount = 2; //not capped
 	data3.letter_data[0].bad_pos = 17;
 	testSimplify(&data3);
 
 	//bad_pos:2
-	printf("bad_pos:2\n");
+	std::cout << "bad_pos:2\n" << std::endl;
 	DataS data4 = data1;
 	data4.letter_data[0].amount = 1|CAPPED;
 	data4.letter_data[0].known_pos = 16;
@@ -98,77 +96,78 @@ void test(){
 	testSimplify(&data4);
 	*/
 
-	printf("\n\n");
+	std::cout << std::endl << std::endl;
 
 
 	//Test genDataTable
-	printf("Testing data table functions:\n");
+	std::cout << "Testing data table functions:" << std::endl;
 	char *ans = getWord(rand()%words.answers.len, words.answers);
-	struct DataS *d_table = (struct DataS *) (words.guesses.len * sizeof (struct DataS));
+	struct DataS *d_table = new struct DataS[words.guesses.len];
 	genDataTable(ans, words.guesses, d_table);
 	n = rand()%words.guesses.len;
 	word = getWord(n, words.guesses);
-	printf("Guess: %s\t", word);
-	printf("Answer: %s\n", ans);
-	printDataS(d_table+n, stdout);
-	free(d_table);
-	printf("\n\n");
+	std::cout << "Guess: " << word << "\t";
+	std::cout << "Answer: " << ans << std::endl;
+	printDataS(d_table+n, std::cout);
+	delete d_table;
+	std::cout << std::endl << std::endl;
 
 	//Done testing
-	printf("\n\n");
+	std::cout << std::endl << std::endl;
 }
 
 void testSimplify(struct DataS *data){
-	printDataS(data, stdout);
+	printDataS(data, std::cout);
 	simplify(data->letter_data, weight(data->letters));
-	printDataS(data, stdout);
-	printf("\n");
-
+	printDataS(data, std::cout);
+	std::cout << std::endl;
 }
 
 void testElimsTable(){
 	long trials = 10000;
-	FILE *outfile;
+	std::ofstream outfile("test.txt");
 	char *ans;
 	int g1, g2, elims;
-	struct DataS *d_table = (struct DataS *) malloc(words.guesses.len * sizeof (struct DataS));
+	struct DataS *d_table = new struct DataS[words.guesses.len];
 	struct Node *e_tree[WORDLEN+1];
 	for(int i=0; i<WORDLEN+1; i++) e_tree[i] = NULL;
 
-	printf("\n\nTesting elims table...\n\n");
+	std::cout << std::endl << std::endl;
+	std::cout << "Testing elims table...";
+	std::cout << std::endl << std::endl;
 
-	outfile = fopen("data/test.txt", "w");
 	while(trials--){
 		//pick an ans
 		ans = getWord(rand()%words.answers.len, words.answers);
-		fprintf(outfile, "Ans: %s\n", ans);
+		outfile << "Ans: " << ans << std::endl;
 		//load data table
 		genDataTable(ans, words.guesses, d_table);
 		//pick 2 guesses
 		g1 = rand()%words.guesses.len;
 		g2 = rand()%words.guesses.len;
-		fprintf(outfile, "Guess 1: %s\n", getWord(g1, words.guesses));
-		fprintf(outfile, "Guess 2: %s\n", getWord(g2, words.guesses));
+		outfile << "Guess 1: " << getWord(g1, words.guesses) << std::endl;
+		outfile << "Guess 2: " << getWord(g2, words.guesses) << std::endl;
 		printDataS(d_table+g1, outfile);
 		printDataS(d_table+g2, outfile);
 		//find combo elims
 		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
-		fprintf(outfile, "Total elims (call 1): %d\n", elims);
+		outfile << "Total elims (call 1): " << elims << std::endl;
 		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
-		fprintf(outfile, "Total elims (call 2): %d\n", elims);
-		fprintf(outfile, "\n");
+		outfile << "Total elims (call 2): " << elims << std::endl;
+		outfile  << std::endl;
 	}
 
-	printf("Save tree? ");
-	if(getchar() == 'y') saveTree(e_tree);
+	std::cout << "Save tree? ";
+	if(std::cin.get() == 'y') saveTree(e_tree);
 	
 	
-	fclose(outfile);
-	free(d_table);
-	freeTree(e_tree, 6);
+	outfile.close();
+	delete d_table;
+	deleteTree(e_tree, 6);
 
-	while(getchar() != '\n') ;
-	printf("Done testing.\nPress ENTER to continue.");
-	getchar();
-	printf("\n\n");
+	while(std::cin.get() != '\n') ;
+	std::cout << "Done testing." << std::endl;
+	std::cout << "Press ENTER to continue.";
+	std::cin.get();
+	std::cout << std::endl << std::endl;
 }

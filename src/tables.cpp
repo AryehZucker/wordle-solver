@@ -29,9 +29,7 @@
 
 #include "tables.h"
 #include "dictionary.h"
-#include "utils.h"
-#include <stdlib.h>
-#include <math.h>
+#include "utils.hpp"
 
 
 extern struct Dict words;
@@ -205,7 +203,7 @@ int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[
 		nodeptr = (data_hash[i]<(*nodeptr)->hash[i]) ? &(*nodeptr)->left : &(*nodeptr)->right;
 	}
 
-	*nodeptr = (struct Node *) malloc(sizeof (struct Node));
+	*nodeptr = new struct Node;
 	for(i=0; i<HASH_LEN; i++) (*nodeptr)->hash[i] = data_hash[i];
 	(*nodeptr)->elims = EMPTY;
 	(*nodeptr)->left = (*nodeptr)->right = NULL;
@@ -214,32 +212,32 @@ int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[
 }
 
 
-void freeNode(struct Node *node){
+void deleteNode(struct Node *node){
 	if(node == NULL)
 		return;
 	
-	freeNode(node->left);
-	freeNode(node->right);
-	free(node);
+	deleteNode(node->left);
+	deleteNode(node->right);
+	delete node;
 }
 
-void freeTree(struct Node *tree[], int size){
+void deleteTree(struct Node *tree[], int size){
 	for(int i=0; i<size; i++)
-		freeNode(tree[i]);
+		deleteNode(tree[i]);
 }
 
 
 
 
 void init_ans_data(){
-	answers_data = (struct DataA *) malloc((words.answers.len+1) * sizeof (struct DataA));
+	answers_data = new struct DataA[words.answers.len+1];
 	for(int i=0; i<words.answers.len; i++)
 		wordToData(getWord(i, words.answers), &answers_data[i]);
 	answers_data[words.answers.len].letters = 0;
 }
 
-void free_ans_data(){
-	free(answers_data);
+void delete_ans_data(){
+	delete answers_data;
 }
 
 int countElims(const struct DataC *data){
