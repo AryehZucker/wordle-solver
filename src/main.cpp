@@ -1,22 +1,15 @@
-#include "dictionary.h"
+#include "dictionary.hpp"
 #include "logging.hpp"
-#include "tables.h"
+#include "tables.hpp"
 #include "utils.hpp"
 #include <csignal>
 #include <iostream>
 
 
-int interrupt = 0;
-extern struct Dict words;
+struct Dict words;
 
 void calcElims(double *total_elims);
 
-
-void handler(int sig){
-	if(sig == SIGINT){
-		interrupt = 1;
-	}
-}
 
 int main(int argc, char *argv[]){
 	int arg = 1; //current argument being processed (skip past the name of the prog)
@@ -26,10 +19,8 @@ int main(int argc, char *argv[]){
 	int best_words[100];
 	double most_elims;
 
-	signal(SIGINT, handler);
-
 	//load dictionary files
-	loadDict(argv[arg], argv[arg+1]);
+	loadDict(argv[arg], argv[arg+1], words);
 	arg += 2;
 	if(words.guesses.len < 0 || words.answers.len < 0){
 		std::cerr << "Error loading word lists" << std::endl;
@@ -77,20 +68,16 @@ int main(int argc, char *argv[]){
 void calcElims(double *total_elims){
 	char *ans;
 	struct DataS *data_table;
-	struct Node *elims_tree[WORDLEN+1];
 	int elims;
 
 	std::cout << std::endl;
 
 	//initialize word-to-data table
-	init_ans_data();
+	init_ans_data(words);
 	std::cout << "Answer to data table initialized." << std::endl;
 
 	data_table = new struct DataS[words.guesses.len];
 	std::cout << "Data table initialized." << std::endl;
-
-	for(int i=0; i<6; i++) elims_tree[i] = NULL;
-	std::cout << "Elims tree initialized." << std::endl;
 
 	std::cout << "Beginning combinatorial calculations..." << std::endl;
 	Logger logger(words);
@@ -99,18 +86,16 @@ void calcElims(double *total_elims){
 		genDataTable(ans, words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
-				elims = getComboElims(data_table+g1_index, data_table+g2_index, elims_tree);
+				elims = getComboElims(data_table+g1_index, data_table+g2_index);
 				total_elims[g1_index] += elims;
 				total_elims[g2_index] += elims;
 				logger.logCompletedIteration();
 			}
 			logger.displayProgress();
-			if(interrupt) exit(1);
 		}
 	}
 
 	std::cout << std::endl;
 
 	delete[] data_table;
-	deleteTree(elims_tree, 6);
 }

@@ -1,5 +1,5 @@
-#include "dictionary.h"
-#include "tables.h"
+#include "dictionary.hpp"
+#include "tables.hpp"
 #include "utils.hpp"
 #include <iostream>
 

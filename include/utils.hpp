@@ -8,13 +8,6 @@ struct DataA;
 struct DataL;
 struct DataS;
 
-struct prog {
-	int answer;
-	long double runs;
-	double time_offset;
-	long lookup_successes, total_lookups;
-};
-
 int weight(int bitstr);
 
 void showDataA(const char *word, const struct DataA *data);

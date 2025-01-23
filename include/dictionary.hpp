@@ -13,7 +13,7 @@ struct Dict {
 	struct WordList guesses;
 };
 
-void loadDict(const char *ans_words_path, const char *guess_words_path);
+void loadDict(const char *ans_words_path, const char *guess_words_path, struct Dict &words);
 struct WordList loadWordList(const char *path);
 char *getWord(int index, struct WordList wl);
 

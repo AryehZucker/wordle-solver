@@ -1,15 +1,11 @@
 #include "utils.hpp"
-#include "dictionary.h"
-#include "tables.h"
+#include "dictionary.hpp"
+#include "tables.hpp"
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-
-
-extern struct Dict words;
-
 
 void showDataA(const char *word, const struct DataA *data){
 	int bits, letters = data->letters;

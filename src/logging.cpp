@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "dictionary.h"
+#include "dictionary.hpp"
 
 Logger::Logger(struct Dict &words) {
     total_iterations = (long double) words.answers.len * words.guesses.len * (words.guesses.len-1) / 2;

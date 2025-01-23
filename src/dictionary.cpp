@@ -1,12 +1,10 @@
-#include "dictionary.h"
+#include "dictionary.hpp"
 #include <cerrno>
 #include <cstring>
 #include <iostream>
 #include <fstream>
 
-struct Dict words;
-
-void loadDict(const char *ans_words_path, const char *guess_words_path){
+void loadDict(const char *ans_words_path, const char *guess_words_path, struct Dict &words){
 	words.answers = loadWordList(ans_words_path);
 	words.guesses = loadWordList(guess_words_path);
 }

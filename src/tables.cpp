@@ -27,8 +27,8 @@
  *If a data entry that you're looking for doesn't exist, create it.
  */
 
-#include "tables.h"
-#include "dictionary.h"
+#include "tables.hpp"
+#include "dictionary.hpp"
 #include "utils.hpp"
 
 
@@ -126,7 +126,21 @@ void genData(const char *guess, const char *ans, struct DataS *data){
 
 
 
-int getComboElims(struct DataS *data1, struct DataS *data2, struct Node *tree[]){
+class Tree {
+public:
+	struct Node *BST[WORDLEN+1];
+
+	Tree(void) {
+		for(int i=0; i<6; i++) BST[i] = NULL;
+	}
+
+	~Tree(void) {
+		deleteTree(BST, 6);
+	}
+};
+
+int getComboElims(struct DataS *data1, struct DataS *data2){
+	static Tree elims_cache;
 	int *elimsptr;
 	static unsigned int data_hash[HASH_LEN];
 	struct DataC combo_data;
@@ -134,7 +148,7 @@ int getComboElims(struct DataS *data1, struct DataS *data2, struct Node *tree[])
 	combine(data1, data2, &combo_data);
 	hashData(&combo_data, data_hash);
 
-	elimsptr = searchTree(data_hash, weight(combo_data.letters), tree);
+	elimsptr = searchTree(data_hash, weight(combo_data.letters), elims_cache.BST);
 
 	if(*elimsptr == EMPTY)	//no entry for this data
 		*elimsptr = countElims(&combo_data);
@@ -224,7 +238,7 @@ void deleteTree(struct Node *tree[], int size){
 
 
 
-void init_ans_data(){
+void init_ans_data(struct Dict words){
 	answers_data = new struct DataA[words.answers.len+1];
 	for(int i=0; i<words.answers.len; i++)
 		wordToData(getWord(i, words.answers), &answers_data[i]);
