@@ -133,16 +133,11 @@ int getComboElims(struct DataS *data1, struct DataS *data2, struct Node *tree[])
 
 	combine(data1, data2, &combo_data);
 	hashData(&combo_data, data_hash);
-	timeEnd(INIT); //logging
 
 	elimsptr = searchTree(data_hash, weight(combo_data.letters), tree);
-	timeEnd(SEARCH); //logging
-	logLookup(*elimsptr != EMPTY); //logging
 
 	if(*elimsptr == EMPTY)	//no entry for this data
 		*elimsptr = countElims(&combo_data);
-
-	timeEnd(COUNT); //logging
 
 	return *elimsptr;
 }

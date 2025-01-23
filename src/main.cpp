@@ -1,4 +1,5 @@
 #include "dictionary.h"
+#include "logging.hpp"
 #include "tables.h"
 #include "utils.hpp"
 #include <csignal>
@@ -92,18 +93,18 @@ void calcElims(double *total_elims){
 	std::cout << "Elims tree initialized." << std::endl;
 
 	std::cout << "Beginning combinatorial calculations..." << std::endl;
-	initLogging(p); //logging
+	Logger logger(words);
 	for(int ans_index = 0; ans_index < words.answers.len; ans_index++){
 		ans = getWord(ans_index, words.answers);
 		genDataTable(ans, words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
-				timeStart(); //logging
 				elims = getComboElims(data_table+g1_index, data_table+g2_index, elims_tree);
 				total_elims[g1_index] += elims;
 				total_elims[g2_index] += elims;
+				logger.logCompletedIteration();
 			}
-			printLogging(); //logging
+			logger.displayProgress();
 			if(interrupt) exit(1);
 		}
 	}
