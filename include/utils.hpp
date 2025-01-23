@@ -26,9 +26,6 @@ void timeEnd(int mode);
 void logLookup(int success);
 void printLogging();
 
-int setSaveFile(const char *path);
-struct prog loadProgress(double *total_elims, struct Node *tree[]);
-void saveProgress(int answer, double *total_elims, struct Node *tree[]);
 void showDataA(const char *word, const struct DataA *data);
 void printData(int letters, const struct DataL *letter_data, int bad_letters, std::ostream &file);
 void printDataS(const struct DataS *data, std::ostream &file);

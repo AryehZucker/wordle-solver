@@ -35,13 +35,6 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 
-	if(arg < argc){
-		if(setSaveFile(argv[arg++]) < 0){
-			std::cerr << "Error setting save path" << std::endl;
-			return 1;
-		}
-	}
-
 	//allot space to store the total eliminations and initialize to zero
 	total_elims = new double[words.guesses.len]();
 
@@ -98,17 +91,9 @@ void calcElims(double *total_elims){
 	for(int i=0; i<6; i++) elims_tree[i] = NULL;
 	std::cout << "Elims tree initialized." << std::endl;
 
-	std::cout << "Loading stored progress..." << std::endl;
-	struct prog p = loadProgress(total_elims, elims_tree);
-	int ans_index = p.answer;
-	std::cout << "Done" << std::endl;
-
 	std::cout << "Beginning combinatorial calculations..." << std::endl;
 	initLogging(p); //logging
-	for(; ans_index < words.answers.len; ans_index++){
-		std::cout << std::endl << "Saving" << std::endl;
-		saveProgress(ans_index, total_elims, elims_tree);
-
+	for(int ans_index = 0; ans_index < words.answers.len; ans_index++){
 		ans = getWord(ans_index, words.answers);
 		genDataTable(ans, words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
@@ -122,10 +107,6 @@ void calcElims(double *total_elims){
 			if(interrupt) exit(1);
 		}
 	}
-
-	//save final progress
-	//	(set answer to answers length so any subsequent runs will skip past any calculations)
-	saveProgress(words.answers.len, total_elims, elims_tree);
 
 	std::cout << std::endl;
 
