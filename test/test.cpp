@@ -67,20 +67,20 @@ void test(){
 	std::cout << "Testing 'simplify':" << std::endl;
 	//test already simple data
 	std::cout << "no change" << std::endl;
-	struct DataS data1 = {1<<('l'-'a') | 1<<('o'-'a'), 1<<('e'-'a') | 1<<('h'-'a'),
-			{{1|CAPPED, 8, 8},
-			{1, 0, 7}}};
-	feedback.dataS = data1;
+	Feedback data1;
+	data1.letters = 1<<('l'-'a') | 1<<('o'-'a');
+	data1.bad_letters = 1<<('e'-'a') | 1<<('h'-'a');
+	data1.letter_data[0] = {1|CAPPED, 8, 8};
+	data1.letter_data[0] = {1, 0, 7};
 	testSimplify(&feedback);
 
 	//test each inference alone
 	//capped:2 & bas_pos:3
 	std::cout << "capped:2 & bad_pos:3" << std::endl;
-	struct DataS data2 = data1;
+	Feedback data2 = data1;
 	data2.letter_data[1].amount = 4; //not capped
 	data2.letter_data[1].known_pos = 23;
 	data2.letter_data[1].bad_pos = 0x1F;
-	feedback.dataS = data2;
 	testSimplify(&feedback);
 
 	/*
@@ -106,7 +106,7 @@ void test(){
 	//Test genDataTable
 	std::cout << "Testing data table functions:" << std::endl;
 	char *ans = getWord(rand()%words.answers.len, words.answers);
-	struct DataS *d_table = new struct DataS[words.guesses.len];
+	Feedback *d_table = new Feedback[words.guesses.len];
 	genDataTable(ans, words.guesses, d_table);
 	n = rand()%words.guesses.len;
 	word = getWord(n, words.guesses);
@@ -121,9 +121,9 @@ void test(){
 }
 
 void testSimplify(Feedback *data){
-	printData(data->dataS.letters, data->dataS.letter_data, data->dataS.bad_letters, std::cout);
-	simplify(data->dataS.letter_data, weight(data->dataS.letters));
-	printData(data->dataS.letters, data->dataS.letter_data, data->dataS.bad_letters, std::cout);
+	printData(data->letters, data->letter_data, data->bad_letters, std::cout);
+	simplify(data->letter_data, weight(data->letters));
+	printData(data->letters, data->letter_data, data->bad_letters, std::cout);
 	std::cout << std::endl;
 }
 
@@ -132,7 +132,7 @@ void testElimsTable(){
 	std::ofstream outfile("test.txt");
 	char *ans;
 	int g1, g2, elims;
-	struct DataS *d_table = new struct DataS[words.guesses.len];
+	Feedback *d_table = new Feedback[words.guesses.len];
 
 	std::cout << std::endl << std::endl;
 	std::cout << "Testing elims table...";

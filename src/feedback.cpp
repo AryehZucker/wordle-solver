@@ -17,13 +17,13 @@ int Feedback::compare(const Feedback &f1, const Feedback &f2)
 
 Feedback::Feedback() {}
 
-Feedback::Feedback(const DataS &data1, const DataS &data2)
+Feedback::Feedback(const Feedback &f1, const Feedback &f2)
 {
-    combine(data1, data2);
+    combine(f1, f2);
     generateHash();
 }
 
-void Feedback::combine(const DataS &data1, const DataS &data2)
+void Feedback::combine(const Feedback &f1, const Feedback &f2)
 {
     unsigned int d1_letters, d2_letters, c_letters;
     // pointers to letter_data that we're up to
@@ -31,17 +31,17 @@ void Feedback::combine(const DataS &data1, const DataS &data2)
     const struct DataL *d1_ldp, *d2_ldp;
 
     // combine good and bad letters
-    data.letters = data1.letters | data2.letters;
-    data.bad_letters = data1.bad_letters | data2.bad_letters;
+    letters = f1.letters | f2.letters;
+    bad_letters = f1.bad_letters | f2.bad_letters;
 
     // keep track of which good letters are in which data
-    d1_letters = data1.letters & ~data2.letters; // letters only found in data1
-    d2_letters = data2.letters & ~data1.letters; // letters only found in data2
-    c_letters = data1.letters & data2.letters;   // letters found in both
+    d1_letters = f1.letters & ~f2.letters; // letters only found in f1
+    d2_letters = f2.letters & ~f1.letters; // letters only found in f2
+    c_letters = f1.letters & f2.letters;   // letters found in both
 
-    d1_ldp = data1.letter_data;
-    d2_ldp = data2.letter_data;
-    combo_ldp = data.letter_data;
+    d1_ldp = f1.letter_data;
+    d2_ldp = f2.letter_data;
+    combo_ldp = letter_data;
 
     // combine letter_data
     while (d1_letters || d2_letters || c_letters)
@@ -64,12 +64,12 @@ void Feedback::combine(const DataS &data1, const DataS &data2)
         c_letters >>= 1;
     }
 
-    simplify(data.letter_data, weight(data.letters));
+    simplify(letter_data, weight(letters));
 }
 
 void Feedback::generateHash(void)
 {
-    int len = weight(data.letters);
+    int len = weight(letters);
     unsigned int tmp;
 
     // inefficient!!
@@ -79,15 +79,15 @@ void Feedback::generateHash(void)
 
     // which is better to go first? which is more commonly diff?
     int j = 0;
-    data_hash[j++] = data.bad_letters;
-    data_hash[j++] = data.letters;
+    data_hash[j++] = bad_letters;
+    data_hash[j++] = letters;
 
     // multiple data can be combined into one int
     for (int i = 0; i < len; i++)
     {
-        tmp = data.letter_data[i].amount << (WORDLEN * 2);
-        tmp |= data.letter_data[i].known_pos << WORDLEN;
-        tmp |= data.letter_data[i].bad_pos;
+        tmp = letter_data[i].amount << (WORDLEN * 2);
+        tmp |= letter_data[i].known_pos << WORDLEN;
+        tmp |= letter_data[i].bad_pos;
 
         if (i % 2 == 0)
         {

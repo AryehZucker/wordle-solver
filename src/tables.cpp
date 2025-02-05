@@ -63,19 +63,19 @@ void wordToData(const char *word, struct DataA *data){
 
 
 //generate a list of DataS, where the positions correspond to a word
-void genDataTable(const char *ans, struct WordList guesses, struct DataS table[]){
+void genDataTable(const char *ans, struct WordList guesses, Feedback table[]){
 	for(int i=0; i < guesses.len; i++)
-		genData(getWord(i, guesses), ans, table+i);
+		genData(getWord(i, guesses), ans, table[i]);
 }
 
 //generate the data for the given guess and ans
-void genData(const char *guess, const char *ans, struct DataS *data){
+void genData(const char *guess, const char *ans, Feedback &data){
 	char letter;
 	static struct DataL letter_data[26];
 	struct DataL *ldataptr;
 	int guess_count, ans_count;
 
-	data->bad_letters = 0;
+	data.bad_letters = 0;
 
 	//initialize data to none
 	for(int i=0; i<26; i++){
@@ -106,22 +106,22 @@ void genData(const char *guess, const char *ans, struct DataS *data){
 		//find "capped"
 		if(guess_count > letter_data[i].amount){
 			if(ans_count == 0)	//the letter is not in the ans
-				data->bad_letters |= 1<<i;
+				data.bad_letters |= 1<<i;
 			else letter_data[i].amount |= CAPPED;
 		}
 	}
 
 	//load all non-empty data into "data"
-	data->letters = 0;
-	ldataptr = data->letter_data;
+	data.letters = 0;
+	ldataptr = data.letter_data;
 	for(int i=0; i<26; i++){
 		if(letter_data[i].amount != 0){
-			data->letters |= 1<<i;
+			data.letters |= 1<<i;
 			*ldataptr++ = letter_data[i];
 		}
 	}
 
-	simplify(data->letter_data, weight(data->letters));
+	simplify(data.letter_data, weight(data.letters));
 }
 
 
@@ -145,14 +145,14 @@ int getElims(const Feedback &feedback){
 	int *elimsptr = searchTree(feedback, elims_cache.BST);
 
 	if(*elimsptr == EMPTY)	//no entry for this data
-		*elimsptr = countElims(&feedback.data);
+		*elimsptr = countElims(feedback);
 
 	return *elimsptr;
 }
 
 
 int *searchTree(const Feedback &feedback, struct Node *tree[]){
-	int len = weight(feedback.data.letters);
+	int len = weight(feedback.letters);
 	struct Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
 
 	while(*nodeptr != NULL){
@@ -200,27 +200,27 @@ void delAnsToDataTable(){
 	delete answers_data;
 }
 
-int countElims(const struct DataC *data){
+int countElims(const Feedback &feedback){
 	struct DataA *ans_data = answers_data;
 	int eliminations = 0;
 	while(ans_data->letters){
-		if(!fits(data, ans_data++))
+		if(!fits(feedback, ans_data++))
 			eliminations++;
 	}
 	return eliminations;
 }
 
 
-int fits(const struct DataC *guess_data, const struct DataA *ans_data){
+int fits(const Feedback &guess_data, const struct DataA *ans_data){
 	//test that the letters don't contradict
-	if(guess_data->letters & ~ans_data->letters || guess_data->bad_letters & ans_data->letters)
+	if(guess_data.letters & ~ans_data->letters || guess_data.bad_letters & ans_data->letters)
 		return 0;
 
 	else {
-		const struct DataL *gldp  = guess_data->letter_data;	//pointer to the guess letter_data that we're upto
+		const struct DataL *gldp  = guess_data.letter_data;	//pointer to the guess letter_data that we're upto
 		const struct DataLA *aldp =   ans_data->letter_data;	//pointer to the answer letter_data that we're upto
 
-		int guess_letters = guess_data->letters,
+		int guess_letters = guess_data.letters,
 		    ans_letters   =   ans_data->letters;
 
 		//loop through all the letters in guess data

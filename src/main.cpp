@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 
 
 void calculateEliminations(double *total_eliminations){
-	struct DataS *data_table;
+	Feedback *data_table;
 	int eliminations;
 
 	std::cout << std::endl;
@@ -70,7 +70,7 @@ void calculateEliminations(double *total_eliminations){
 	initAnsToDataTable(words);
 	std::cout << "Answer to data table initialized." << std::endl;
 
-	data_table = new struct DataS[words.guesses.len];
+	data_table = new Feedback[words.guesses.len];
 	std::cout << "Data table initialized." << std::endl;
 
 	std::cout << "Beginning combinatorial calculations..." << std::endl;

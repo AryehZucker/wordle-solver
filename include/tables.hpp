@@ -32,8 +32,8 @@ struct Node {
 
 void wordToData(const char *word, struct DataA *data);
 
-void genDataTable(const char *ans, struct WordList guesses, struct DataS table[]);
-void genData(const char *guess, const char *ans, struct DataS *data);
+void genDataTable(const char *ans, struct WordList guesses, Feedback table[]);
+void genData(const char *guess, const char *ans, Feedback &data);
 
 int getElims(const Feedback &feedback);
 int *searchTree(const Feedback &feedback, struct Node *tree[]);
@@ -41,8 +41,8 @@ void deleteTree(struct Node *tree[], int size);
 
 void initAnsToDataTable(struct Dict words);
 void delAnsToDataTable(void);
-int countElims(const struct DataC *data);
-int fits(const struct DataC *data, const struct DataA *ans_data);
+int countElims(const Feedback &feedback);
+int fits(const Feedback &feedback, const struct DataA *ans_data);
 
 void simplify(struct DataL *letter_data, const int data_len);
 
