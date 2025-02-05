@@ -1,63 +1,58 @@
 #include "dictionary.hpp"
+#include "feedback.hpp"
 #include "logging.hpp"
 #include "tables.hpp"
-#include "utils.hpp"
-#include <csignal>
+
 #include <iostream>
 
 
 struct Dict words;
 
-void calcElims(double *total_elims);
+void calculateEliminations(double *total_eliminations);
 
 
 int main(int argc, char *argv[]){
-	int arg = 1; //current argument being processed (skip past the name of the prog)
-
-	double *total_elims;
-
+	double *total_eliminations;
 	int best_words[100];
-	double most_elims;
+	double max_eliminations;
 
-	//load dictionary files
-	loadDict(argv[arg], argv[arg+1], words);
-	arg += 2;
+	loadDict(argv[1], argv[2], words);
 	if(words.guesses.len < 0 || words.answers.len < 0){
 		std::cerr << "Error loading word lists" << std::endl;
 		return 1;
 	}
 
 	//allot space to store the total eliminations and initialize to zero
-	total_elims = new double[words.guesses.len]();
+	total_eliminations = new double[words.guesses.len]();
 
 	std::cout << "Calculating eliminations...";
-	calcElims(total_elims);
+	calculateEliminations(total_eliminations);
 	std::cout << "Done" << std::endl;
 
 	std::cout << "Finding best words...";
-	most_elims = 0;
+	max_eliminations = 0;
 	for(int i=0; i<words.guesses.len; i++)
-		if(total_elims[i] > most_elims)
-			most_elims = total_elims[i];
+		if(total_eliminations[i] > max_eliminations)
+			max_eliminations = total_eliminations[i];
 
 	unsigned int j = 0;
 	for(int i=0; i<words.guesses.len && j<(sizeof(best_words)/sizeof(int)); i++)
-		if(total_elims[i] == most_elims)
+		if(total_eliminations[i] == max_eliminations)
 			best_words[j++] = i;
 	best_words[j] = -1; //mark end of list
 	std::cout << "Done" << std::endl;
 
 	//make the stored totals into averages
 	for(int i=0; i<words.guesses.len; i++)
-		total_elims[i] /= words.answers.len * (words.guesses.len-1);
+		total_eliminations[i] /= words.answers.len * (words.guesses.len-1);
 
 	std::cout << std::endl << "Best words:" << std::endl;
 	for(int i=0; best_words[i] >= 0; i++){
 		std::cout << getWord(best_words[i], words.guesses) << std::endl;
 	}
 
-	delete[] total_elims;
-	delete_ans_data();
+	delete[] total_eliminations;
+	delAnsToDataTable();
 
 	return 0;
 }
@@ -65,15 +60,14 @@ int main(int argc, char *argv[]){
 
 
 
-void calcElims(double *total_elims){
-	char *ans;
+void calculateEliminations(double *total_eliminations){
 	struct DataS *data_table;
-	int elims;
+	int eliminations;
 
 	std::cout << std::endl;
 
 	//initialize word-to-data table
-	init_ans_data(words);
+	initAnsToDataTable(words);
 	std::cout << "Answer to data table initialized." << std::endl;
 
 	data_table = new struct DataS[words.guesses.len];
@@ -82,13 +76,13 @@ void calcElims(double *total_elims){
 	std::cout << "Beginning combinatorial calculations..." << std::endl;
 	Logger logger(words);
 	for(int ans_index = 0; ans_index < words.answers.len; ans_index++){
-		ans = getWord(ans_index, words.answers);
-		genDataTable(ans, words.guesses, data_table);
+		genDataTable(getWord(ans_index, words.answers), words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
-				elims = getComboElims(data_table+g1_index, data_table+g2_index);
-				total_elims[g1_index] += elims;
-				total_elims[g2_index] += elims;
+				Feedback feedback(data_table[g1_index], data_table[g2_index]);
+				eliminations = getElims(feedback);
+				total_eliminations[g1_index] += eliminations;
+				total_eliminations[g2_index] += eliminations;
 				logger.logCompletedIteration();
 			}
 			logger.displayProgress();
@@ -96,6 +90,4 @@ void calcElims(double *total_elims){
 	}
 
 	std::cout << std::endl;
-
-	delete[] data_table;
 }

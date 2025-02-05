@@ -1,4 +1,5 @@
 #include "dictionary.hpp"
+#include "feedback.hpp"
 #include "tables.hpp"
 #include "utils.hpp"
 #include <iostream>
@@ -6,10 +7,10 @@
 //write tree test to file for large testing samples
 
 void test(void);
-void testSimplify(struct DataS *);
+void testSimplify(Feedback *);
 void testElimsTable(void);
 
-extern struct Dict words;
+struct Dict words;
 
 int main() {
 	test();
@@ -20,6 +21,7 @@ void test(){
 	char *word;
 	int n;
 	struct DataA ans_data;
+	Feedback feedback;
 
 	std::cout << "Testing..." << std::endl;
 
@@ -68,7 +70,8 @@ void test(){
 	struct DataS data1 = {1<<('l'-'a') | 1<<('o'-'a'), 1<<('e'-'a') | 1<<('h'-'a'),
 			{{1|CAPPED, 8, 8},
 			{1, 0, 7}}};
-	testSimplify(&data1);
+	feedback.dataS = data1;
+	testSimplify(&feedback);
 
 	//test each inference alone
 	//capped:2 & bas_pos:3
@@ -77,7 +80,8 @@ void test(){
 	data2.letter_data[1].amount = 4; //not capped
 	data2.letter_data[1].known_pos = 23;
 	data2.letter_data[1].bad_pos = 0x1F;
-	testSimplify(&data2);
+	feedback.dataS = data2;
+	testSimplify(&feedback);
 
 	/*
 	//capped:3 & known_pos:2
@@ -108,7 +112,7 @@ void test(){
 	word = getWord(n, words.guesses);
 	std::cout << "Guess: " << word << "\t";
 	std::cout << "Answer: " << ans << std::endl;
-	printDataS(d_table+n, std::cout);
+	printData(d_table[n].letters, d_table[n].letter_data, d_table[n].bad_letters, std::cout);
 	delete d_table;
 	std::cout << std::endl << std::endl;
 
@@ -116,10 +120,10 @@ void test(){
 	std::cout << std::endl << std::endl;
 }
 
-void testSimplify(struct DataS *data){
-	printDataS(data, std::cout);
-	simplify(data->letter_data, weight(data->letters));
-	printDataS(data, std::cout);
+void testSimplify(Feedback *data){
+	printData(data->dataS.letters, data->dataS.letter_data, data->dataS.bad_letters, std::cout);
+	simplify(data->dataS.letter_data, weight(data->dataS.letters));
+	printData(data->dataS.letters, data->dataS.letter_data, data->dataS.bad_letters, std::cout);
 	std::cout << std::endl;
 }
 
@@ -129,8 +133,6 @@ void testElimsTable(){
 	char *ans;
 	int g1, g2, elims;
 	struct DataS *d_table = new struct DataS[words.guesses.len];
-	struct Node *e_tree[WORDLEN+1];
-	for(int i=0; i<WORDLEN+1; i++) e_tree[i] = NULL;
 
 	std::cout << std::endl << std::endl;
 	std::cout << "Testing elims table...";
@@ -147,23 +149,23 @@ void testElimsTable(){
 		g2 = rand()%words.guesses.len;
 		outfile << "Guess 1: " << getWord(g1, words.guesses) << std::endl;
 		outfile << "Guess 2: " << getWord(g2, words.guesses) << std::endl;
-		printDataS(d_table+g1, outfile);
-		printDataS(d_table+g2, outfile);
+		printData(d_table[g1].letters, d_table[g1].letter_data, d_table[g1].bad_letters, outfile);
+		printData(d_table[g2].letters, d_table[g2].letter_data, d_table[g2].bad_letters, outfile);
 		//find combo elims
-		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
+		Feedback feedback(d_table[g1], d_table[g2]);
+		elims = getElims(feedback);
 		outfile << "Total elims (call 1): " << elims << std::endl;
-		elims = getComboElims(d_table+g1, d_table+g2, e_tree);
+		elims = getElims(feedback);
 		outfile << "Total elims (call 2): " << elims << std::endl;
 		outfile  << std::endl;
 	}
 
-	std::cout << "Save tree? ";
-	if(std::cin.get() == 'y') saveTree(e_tree);
+	// std::cout << "Save tree? ";
+	// if(std::cin.get() == 'y') saveTree(e_tree);
 	
 	
 	outfile.close();
 	delete d_table;
-	deleteTree(e_tree, 6);
 
 	while(std::cin.get() != '\n') ;
 	std::cout << "Done testing." << std::endl;

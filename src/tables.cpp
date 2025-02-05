@@ -29,6 +29,7 @@
 
 #include "tables.hpp"
 #include "dictionary.hpp"
+#include "feedback.hpp"
 #include "utils.hpp"
 
 
@@ -126,94 +127,43 @@ void genData(const char *guess, const char *ans, struct DataS *data){
 
 
 
-class Tree {
-public:
-	struct Node *BST[WORDLEN+1];
+struct Tree {
+	Node *BST[WORDLEN+1];
 
-	Tree(void) {
+	Tree() {
 		for(int i=0; i<6; i++) BST[i] = NULL;
 	}
 
-	~Tree(void) {
+	~Tree() {
 		deleteTree(BST, 6);
 	}
 };
 
-int getComboElims(struct DataS *data1, struct DataS *data2){
+int getElims(const Feedback &feedback){
 	static Tree elims_cache;
-	int *elimsptr;
-	static unsigned int data_hash[HASH_LEN];
-	struct DataC combo_data;
 
-	combine(data1, data2, &combo_data);
-	hashData(&combo_data, data_hash);
-
-	elimsptr = searchTree(data_hash, weight(combo_data.letters), elims_cache.BST);
+	int *elimsptr = searchTree(feedback, elims_cache.BST);
 
 	if(*elimsptr == EMPTY)	//no entry for this data
-		*elimsptr = countElims(&combo_data);
+		*elimsptr = countElims(&feedback.data);
 
 	return *elimsptr;
 }
 
 
-//combine 'data1' and 'data2' into one data object, 'combo_data'
-void combine(const struct DataS *data1, const struct DataS *data2, struct DataC *combo_data){
-	unsigned int d1_letters, d2_letters, c_letters;
-	//pointers to letter_data that we're up to
-	struct DataL *combo_ldp;
-	const struct DataL *d1_ldp, *d2_ldp;
-
-	//combine good and bad letters
-	combo_data->letters = data1->letters | data2->letters;
-	combo_data->bad_letters = data1->bad_letters | data2->bad_letters;
-
-	//keep track of which good letters are in which data
-	d1_letters = data1->letters & ~data2->letters;	//letters only found in data1
-	d2_letters = data2->letters & ~data1->letters;	//letters only found in data2
-	c_letters  = data1->letters &  data2->letters;	//letters found in both
-
-	d1_ldp    = data1->letter_data;
-	d2_ldp    = data2->letter_data;
-	combo_ldp = combo_data->letter_data;
-
-	//combine letter_data
-	while(d1_letters || d2_letters || c_letters){
-		if(c_letters & 1){
-			//this automatically acounts for CAPPED
-			combo_ldp->amount = MAX(d1_ldp->amount, d2_ldp->amount);
-			combo_ldp->known_pos = d1_ldp->known_pos | d2_ldp->known_pos;
-			combo_ldp->bad_pos = d1_ldp->bad_pos & d2_ldp->bad_pos;
-			d1_ldp++, d2_ldp++, combo_ldp++;
-		}
-		else if(d1_letters & 1)
-			*combo_ldp++ = *d1_ldp++;
-		else if(d2_letters & 1)
-			*combo_ldp++ = *d2_ldp++;
-
-		d1_letters >>= 1;
-        	d2_letters >>= 1;
-	        c_letters  >>= 1;
-	}
-
-        simplify(combo_data->letter_data, weight(combo_data->letters));
-}
-
-
-int *searchTree(const unsigned int *data_hash, const int len, struct Node *tree[]){
-	int i;
+int *searchTree(const Feedback &feedback, struct Node *tree[]){
+	int len = weight(feedback.data.letters);
 	struct Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
 
 	while(*nodeptr != NULL){
-		for(i=0; data_hash[i] == (*nodeptr)->hash[i]; i++){
-			if(i == HASH_LEN-1)	//the entire hash has been compared and matches
-				return &(*nodeptr)->elims;
-		}
-		nodeptr = (data_hash[i]<(*nodeptr)->hash[i]) ? &(*nodeptr)->left : &(*nodeptr)->right;
+		int cmp = Feedback::compare(feedback, *(*nodeptr)->feedback);
+		if (cmp == 0)
+			return &(*nodeptr)->elims;
+		nodeptr = (cmp < 0) ? &(*nodeptr)->left : &(*nodeptr)->right;
 	}
 
 	*nodeptr = new struct Node;
-	for(i=0; i<HASH_LEN; i++) (*nodeptr)->hash[i] = data_hash[i];
+	(*nodeptr)->feedback = new Feedback(feedback);
 	(*nodeptr)->elims = EMPTY;
 	(*nodeptr)->left = (*nodeptr)->right = NULL;
 
@@ -227,6 +177,7 @@ void deleteNode(struct Node *node){
 	
 	deleteNode(node->left);
 	deleteNode(node->right);
+	delete node->feedback;
 	delete node;
 }
 
@@ -238,25 +189,25 @@ void deleteTree(struct Node *tree[], int size){
 
 
 
-void init_ans_data(struct Dict words){
+void initAnsToDataTable(struct Dict words){
 	answers_data = new struct DataA[words.answers.len+1];
 	for(int i=0; i<words.answers.len; i++)
 		wordToData(getWord(i, words.answers), &answers_data[i]);
 	answers_data[words.answers.len].letters = 0;
 }
 
-void delete_ans_data(){
+void delAnsToDataTable(){
 	delete answers_data;
 }
 
 int countElims(const struct DataC *data){
 	struct DataA *ans_data = answers_data;
-	int elims = 0;
+	int eliminations = 0;
 	while(ans_data->letters){
 		if(!fits(data, ans_data++))
-			elims++;
+			eliminations++;
 	}
-	return elims;
+	return eliminations;
 }
 
 
@@ -357,35 +308,4 @@ void simplify(struct DataL *letter_data, const int data_len){
 	 *this will not affect whether data fits a word (and so is of no concern),
 	 *it will only affect considering data as equal
 	 */
-}
-
-
-
-
-void hashData(const struct DataC *data, unsigned int *buffer){
-	int i, len = weight(data->letters);
-	unsigned int tmp;
-
-	//inefficient!!
-	//initialize the hash to null data (0 is null because amount can't be 0)
-	for(i=0; i<HASH_LEN; i++)
-		buffer[i] = 0;
-
-	//which is better to go first? which is more commonly diff?
-	*buffer++ = data->bad_letters;
-	*buffer++ = data->letters;
-
-	//multiple data can be combined into one int
-	for(i=0; i<len; i++){
-		tmp = data->letter_data[i].amount << (WORDLEN*2);
-		tmp |= data->letter_data[i].known_pos << WORDLEN;
-		tmp |= data->letter_data[i].bad_pos;
-
-		if(i%2 == 0){
-			*buffer = tmp << 16;
-		}
-		else {
-			*buffer++ |= tmp;
-		}
-	}
 }

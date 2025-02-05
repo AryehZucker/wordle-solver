@@ -1,6 +1,9 @@
 #include "utils.hpp"
+
 #include "dictionary.hpp"
+#include "feedback.hpp"
 #include "tables.hpp"
+
 #include <cmath>
 #include <cstring>
 #include <fstream>
@@ -24,10 +27,6 @@ void showDataA(const char *word, const struct DataA *data){
 			letter_data++;
 		}
 	}
-}
-
-void printDataS(const struct DataS *data, std::ostream &file){
-	printData(data->letters, data->letter_data, data->bad_letters, file);
 }
 
 void printData(int letters, const struct DataL *letter_data, int bad_letters, std::ostream &file){
@@ -69,10 +68,10 @@ void printTree(struct Node *node, std::ostream &file){
 
 	printTree(node->left, file);
 
-	file << std::setw(8) << std::hex << std::setfill('0') << node->hash[0] << " " << std::left << std::setw(8) << node->hash[1] << " - ";
+	file << std::setw(8) << std::hex << std::setfill('0') << node->feedback->data_hash[0] << " " << std::left << std::setw(8) << node->feedback->data_hash[1] << " - ";
 	for(int i=2; i<HASH_LEN; i++)
-		file << std::setw(4) << std::hex << std::setfill('0') << (node->hash[i] >> 16)
-				<< " " << std::setw(4) << std::hex << std::setfill('0') << (node->hash[i] & 0xFFFF)
+		file << std::setw(4) << std::hex << std::setfill('0') << (node->feedback->data_hash[i] >> 16)
+				<< " " << std::setw(4) << std::hex << std::setfill('0') << (node->feedback->data_hash[i] & 0xFFFF)
 				<< " ";
 	file << ": " << node->elims << std::endl;
 
