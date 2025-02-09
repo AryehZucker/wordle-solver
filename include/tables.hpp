@@ -24,20 +24,12 @@ struct DataA {
 	struct DataLA letter_data[HASH_LEN];
 };
 
-struct Node {
-	int elims;
-	const Feedback *feedback;
-	struct Node *left, *right;
-};
-
 void wordToData(const char *word, struct DataA *data);
 
 void genDataTable(const char *ans, struct WordList guesses, Feedback table[]);
 void genData(const char *guess, const char *ans, Feedback &data);
 
 int getElims(const Feedback &feedback);
-int *searchTree(const Feedback &feedback, struct Node *tree[]);
-void deleteTree(struct Node *tree[], int size);
 
 void initAnsToDataTable(struct Dict words);
 void delAnsToDataTable(void);

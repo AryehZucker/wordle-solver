@@ -4,6 +4,8 @@
 #include "tables.hpp"
 #include "utils.hpp"
 
+#include <bits/stdc++.h>
+
 int Feedback::compare(const Feedback &f1, const Feedback &f2)
 {
     int i;
@@ -21,6 +23,11 @@ Feedback::Feedback(const Feedback &f1, const Feedback &f2)
 {
     combine(f1, f2);
     generateHash();
+}
+
+bool Feedback::operator==(const Feedback &other) const
+{
+    return compare(*this, other) == 0;
 }
 
 void Feedback::combine(const Feedback &f1, const Feedback &f2)
@@ -98,4 +105,21 @@ void Feedback::generateHash(void)
             data_hash[j++] |= tmp;
         }
     }
+}
+
+std::size_t FeedbackHasher::operator()(const Feedback &f) const
+{
+    std::hash<int> int_hasher;
+    std::hash<unsigned char> char_hasher;
+
+    std::size_t hash = 17;
+    hash = hash * 31 + int_hasher(f.letters);
+    hash = hash * 31 + int_hasher(f.bad_letters);
+    for (int i = 0; i < weight(f.letters); i++)
+    {
+        hash = hash * 31 + char_hasher(f.letter_data[i].amount);
+        hash = hash * 31 + char_hasher(f.letter_data[i].known_pos);
+        hash = hash * 31 + char_hasher(f.letter_data[i].bad_pos);
+    }
+    return hash;
 }

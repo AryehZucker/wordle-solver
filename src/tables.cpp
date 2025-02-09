@@ -32,6 +32,7 @@
 #include "feedback.hpp"
 #include "utils.hpp"
 
+#include <unordered_map>
 
 extern struct Dict words;
 struct DataA *answers_data;
@@ -125,68 +126,17 @@ void genData(const char *guess, const char *ans, Feedback &data){
 }
 
 
-
-
-struct Tree {
-	Node *BST[WORDLEN+1];
-
-	Tree() {
-		for(int i=0; i<6; i++) BST[i] = NULL;
-	}
-
-	~Tree() {
-		deleteTree(BST, 6);
-	}
-};
-
 int getElims(const Feedback &feedback){
-	static Tree elims_cache;
+	static std::unordered_map<Feedback, int, FeedbackHasher> cache;
+	int count;
 
-	int *elimsptr = searchTree(feedback, elims_cache.BST);
+	if (cache.find(feedback) != cache.end())
+		count = cache[feedback];
+	else
+		count = cache[feedback] = countElims(feedback);
 
-	if(*elimsptr == EMPTY)	//no entry for this data
-		*elimsptr = countElims(feedback);
-
-	return *elimsptr;
+	return count;
 }
-
-
-int *searchTree(const Feedback &feedback, struct Node *tree[]){
-	int len = weight(feedback.letters);
-	struct Node **nodeptr = &tree[len]; //a pointer to where the node is held in the tree
-
-	while(*nodeptr != NULL){
-		int cmp = Feedback::compare(feedback, *(*nodeptr)->feedback);
-		if (cmp == 0)
-			return &(*nodeptr)->elims;
-		nodeptr = (cmp < 0) ? &(*nodeptr)->left : &(*nodeptr)->right;
-	}
-
-	*nodeptr = new struct Node;
-	(*nodeptr)->feedback = new Feedback(feedback);
-	(*nodeptr)->elims = EMPTY;
-	(*nodeptr)->left = (*nodeptr)->right = NULL;
-
-	return &(*nodeptr)->elims;
-}
-
-
-void deleteNode(struct Node *node){
-	if(node == NULL)
-		return;
-	
-	deleteNode(node->left);
-	deleteNode(node->right);
-	delete node->feedback;
-	delete node;
-}
-
-void deleteTree(struct Node *tree[], int size){
-	for(int i=0; i<size; i++)
-		deleteNode(tree[i]);
-}
-
-
 
 
 void initAnsToDataTable(struct Dict words){

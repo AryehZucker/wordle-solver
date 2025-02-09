@@ -160,10 +160,6 @@ void testElimsTable(){
 		outfile  << std::endl;
 	}
 
-	// std::cout << "Save tree? ";
-	// if(std::cin.get() == 'y') saveTree(e_tree);
-	
-	
 	outfile.close();
 	delete d_table;
 

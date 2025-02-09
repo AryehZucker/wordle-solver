@@ -56,29 +56,6 @@ void printData(int letters, const struct DataL *letter_data, int bad_letters, st
 }
 
 
-void saveTree(struct Node *tree[]){
-	std::ofstream file("tree.txt");
-	for(int i=0; i<=WORDLEN; i++)
-		printTree(tree[i], file);
-	file.close();
-}
-
-void printTree(struct Node *node, std::ostream &file){
-	if(node == NULL) return;
-
-	printTree(node->left, file);
-
-	file << std::setw(8) << std::hex << std::setfill('0') << node->feedback->data_hash[0] << " " << std::left << std::setw(8) << node->feedback->data_hash[1] << " - ";
-	for(int i=2; i<HASH_LEN; i++)
-		file << std::setw(4) << std::hex << std::setfill('0') << (node->feedback->data_hash[i] >> 16)
-				<< " " << std::setw(4) << std::hex << std::setfill('0') << (node->feedback->data_hash[i] & 0xFFFF)
-				<< " ";
-	file << ": " << node->elims << std::endl;
-
-	printTree(node->right, file);
-}
-
-
 //calculate and return the weight of a bitstring
 int weight(int bitstr){
 	int w = 0;

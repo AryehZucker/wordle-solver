@@ -16,8 +16,8 @@ The program performs the following steps:
     - Whether the number of occurrences is capped (indicating all occurrences of that letter have been discovered).
     - Positions the letter is known to be in.
     - Positions the letter is known not to be in.
-3. To improve efficiency, the program first consults a binary search tree which stores the elimination counts for data structures that have already been generated. If a matching data structure is found in the tree, the corresponding elimination count is retrieved.
-4. If the data structure is not found in the tree, the program then counts eliminations by comparing this data structure with the data of each individual answer. It determines whether a word can be eliminated based on whether the information deduced from the two guesses complies with it. The result is then stored in the tree for future use.
+3. To improve efficiency, the program first consults a hash map which stores the elimination counts for data structures that have already been generated. If a matching data structure is found in the map, the corresponding elimination count is retrieved.
+4. If the data structure is not found in the map, the program then counts eliminations by comparing this data structure with the data of each individual answer. It determines whether a word can be eliminated based on whether the information deduced from the two guesses complies with it. The result is then stored in the hash map for future use.
 3. Each individual word accumulates a total score, representing how many answers it helps to eliminate. Once the number of potential answers eliminated is determined for a combination of guesses, it is added to the total for each of the guesses in the pair.
 4. Finally, the program compares the totals of all valid words and outputs the word(s) with the highest elimination potential as the best first guess.
 
