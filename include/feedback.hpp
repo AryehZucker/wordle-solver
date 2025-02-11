@@ -18,7 +18,6 @@ struct Feedback
     int letters = 0, bad_letters = 0;
     DataL letter_data[10];
     unsigned int data_hash[HASH_LEN];
-    static int compare(const Feedback &f1, const Feedback &f2);
     Feedback(void);
     Feedback(const Feedback &f1, const Feedback &f2);
     bool operator==(const Feedback &other) const;

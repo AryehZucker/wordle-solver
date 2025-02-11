@@ -6,15 +6,15 @@
 
 #include <bits/stdc++.h>
 
-int Feedback::compare(const Feedback &f1, const Feedback &f2)
+bool Feedback::operator==(const Feedback &other) const
 {
     int i;
-    for (i = 0; f1.data_hash[i] == f2.data_hash[i]; i++)
+    for (i = 0; this->data_hash[i] == other.data_hash[i]; i++)
     {
         if (i == HASH_LEN - 1) // the entire hash has been compared and matches
-            return 0;
+            return true;
     }
-    return (f1.data_hash[i] < f2.data_hash[i]) ? -1 : 1;
+    return false;
 }
 
 Feedback::Feedback() {}
@@ -23,11 +23,6 @@ Feedback::Feedback(const Feedback &f1, const Feedback &f2)
 {
     combine(f1, f2);
     generateHash();
-}
-
-bool Feedback::operator==(const Feedback &other) const
-{
-    return compare(*this, other) == 0;
 }
 
 void Feedback::combine(const Feedback &f1, const Feedback &f2)
