@@ -1,6 +1,5 @@
 #include "feedback.hpp"
 
-#include "dictionary.hpp"
 #include "tables.hpp"
 #include "utils.hpp"
 
@@ -8,13 +7,18 @@
 
 bool Feedback::operator==(const Feedback &other) const
 {
-    int i;
-    for (i = 0; this->data_hash[i] == other.data_hash[i]; i++)
-    {
-        if (i == HASH_LEN - 1) // the entire hash has been compared and matches
-            return true;
-    }
-    return false;
+    if (letters != other.letters ||
+            bad_letters != other.bad_letters ||
+            weight(letters) != weight(other.letters))
+        return false;
+
+    for (int i = 0; i < weight(letters); i++)
+        if (letter_data[i].amount != other.letter_data[i].amount ||
+                letter_data[i].known_pos != other.letter_data[i].known_pos ||
+                letter_data[i].bad_pos != other.letter_data[i].bad_pos)
+            return false;
+
+    return true;
 }
 
 Feedback::Feedback() {}
@@ -22,7 +26,6 @@ Feedback::Feedback() {}
 Feedback::Feedback(const Feedback &f1, const Feedback &f2)
 {
     combine(f1, f2);
-    generateHash();
 }
 
 void Feedback::combine(const Feedback &f1, const Feedback &f2)
@@ -67,39 +70,6 @@ void Feedback::combine(const Feedback &f1, const Feedback &f2)
     }
 
     simplify(letter_data, weight(letters));
-}
-
-void Feedback::generateHash(void)
-{
-    int len = weight(letters);
-    unsigned int tmp;
-
-    // inefficient!!
-    // initialize the hash to null data (0 is null because amount can't be 0)
-    for (int i = 0; i < HASH_LEN; i++)
-        data_hash[i] = 0;
-
-    // which is better to go first? which is more commonly diff?
-    int j = 0;
-    data_hash[j++] = bad_letters;
-    data_hash[j++] = letters;
-
-    // multiple data can be combined into one int
-    for (int i = 0; i < len; i++)
-    {
-        tmp = letter_data[i].amount << (WORDLEN * 2);
-        tmp |= letter_data[i].known_pos << WORDLEN;
-        tmp |= letter_data[i].bad_pos;
-
-        if (i % 2 == 0)
-        {
-            data_hash[j] = tmp << 16;
-        }
-        else
-        {
-            data_hash[j++] |= tmp;
-        }
-    }
 }
 
 std::size_t FeedbackHasher::operator()(const Feedback &f) const

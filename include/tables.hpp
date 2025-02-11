@@ -1,6 +1,7 @@
 #ifndef TABLES_H
 #define TABLES_H
 
+#include "dictionary.hpp"
 #include "feedback.hpp"
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -21,7 +22,7 @@ struct DataLA {
 //data of an answer
 struct DataA {
 	int letters;
-	struct DataLA letter_data[HASH_LEN];
+	struct DataLA letter_data[WORDLEN];
 };
 
 void wordToData(const char *word, struct DataA *data);
