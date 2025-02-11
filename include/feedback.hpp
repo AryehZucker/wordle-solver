@@ -14,12 +14,8 @@ struct Feedback
 {
     int letters = 0, bad_letters = 0;
     DataL letter_data[10];
-    Feedback(void);
-    Feedback(const Feedback &f1, const Feedback &f2);
     bool operator==(const Feedback &other) const;
-
-private:
-    void combine(const Feedback &f1, const Feedback &f2);
+    Feedback operator+(const Feedback &other) const;
 };
 
 struct FeedbackHasher

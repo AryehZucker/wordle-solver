@@ -152,7 +152,7 @@ void testElimsTable(){
 		printData(d_table[g1].letters, d_table[g1].letter_data, d_table[g1].bad_letters, outfile);
 		printData(d_table[g2].letters, d_table[g2].letter_data, d_table[g2].bad_letters, outfile);
 		//find combo elims
-		Feedback feedback(d_table[g1], d_table[g2]);
+		Feedback feedback = d_table[g1] + d_table[g2];
 		elims = getElims(feedback);
 		outfile << "Total elims (call 1): " << elims << std::endl;
 		elims = getElims(feedback);

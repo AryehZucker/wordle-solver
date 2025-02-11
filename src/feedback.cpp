@@ -21,32 +21,26 @@ bool Feedback::operator==(const Feedback &other) const
     return true;
 }
 
-Feedback::Feedback() {}
-
-Feedback::Feedback(const Feedback &f1, const Feedback &f2)
+Feedback Feedback::operator+(const Feedback &other) const
 {
-    combine(f1, f2);
-}
-
-void Feedback::combine(const Feedback &f1, const Feedback &f2)
-{
+    Feedback combined_feedback;
     unsigned int d1_letters, d2_letters, c_letters;
     // pointers to letter_data that we're up to
     struct DataL *combo_ldp;
     const struct DataL *d1_ldp, *d2_ldp;
 
     // combine good and bad letters
-    letters = f1.letters | f2.letters;
-    bad_letters = f1.bad_letters | f2.bad_letters;
+    combined_feedback.letters = letters | other.letters;
+    combined_feedback.bad_letters = bad_letters | other.bad_letters;
 
     // keep track of which good letters are in which data
-    d1_letters = f1.letters & ~f2.letters; // letters only found in f1
-    d2_letters = f2.letters & ~f1.letters; // letters only found in f2
-    c_letters = f1.letters & f2.letters;   // letters found in both
+    d1_letters = letters & ~other.letters; // letters only found in this
+    d2_letters = other.letters & ~letters; // letters only found in other
+    c_letters = letters & other.letters;   // letters found in both
 
-    d1_ldp = f1.letter_data;
-    d2_ldp = f2.letter_data;
-    combo_ldp = letter_data;
+    d1_ldp = letter_data;
+    d2_ldp = other.letter_data;
+    combo_ldp = combined_feedback.letter_data;
 
     // combine letter_data
     while (d1_letters || d2_letters || c_letters)
@@ -69,7 +63,9 @@ void Feedback::combine(const Feedback &f1, const Feedback &f2)
         c_letters >>= 1;
     }
 
-    simplify(letter_data, weight(letters));
+    simplify(combined_feedback.letter_data, weight(combined_feedback.letters));
+
+    return combined_feedback;
 }
 
 std::size_t FeedbackHasher::operator()(const Feedback &f) const
