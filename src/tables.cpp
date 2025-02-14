@@ -128,14 +128,11 @@ void genData(const char *guess, const char *ans, Feedback &data){
 
 int getElims(const Feedback &feedback){
 	static std::unordered_map<Feedback, int, FeedbackHasher> cache;
-	int count;
 
 	if (cache.find(feedback) != cache.end())
-		count = cache[feedback];
-	else
-		count = cache[feedback] = countElims(feedback);
+		return cache[feedback];
 
-	return count;
+	return cache[feedback] = countElims(feedback);
 }
 
 
