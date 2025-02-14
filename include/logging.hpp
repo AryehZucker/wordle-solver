@@ -5,7 +5,7 @@
 
 class Logger {
 private:
-    long double completed_iterations = 0, total_iterations;
+    long long completed_iterations = 0, total_iterations;
     time_t last_print_time = 0;
 public:
     Logger(struct Dict &words);
