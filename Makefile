@@ -4,10 +4,11 @@ OBJDIR ::= obj
 INCLUDEDIR ::= include
 
 CXX := g++
-CXXFLAGS := -g -Wall -Ofast -I$(INCLUDEDIR)
+CXXFLAGS := -MMD -MP -g -Wall -Ofast -I$(INCLUDEDIR)
 
 SRCS := $(wildcard $(SRCDIR)/*.cpp)
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+DEPS := $(OBJS:.o=.d)
 
 #Compile everything
 all: $(TARGET)
@@ -29,10 +30,12 @@ $(OBJDIR):
 
 #Delete all object files
 clean:
-	rm -rv $(TARGET) $(OBJDIR)
+	rm -rfv $(TARGET) $(OBJDIR)
 
 run: $(TARGET)
 	./$(TARGET) words/answers.txt words/guesses.txt
 
 #Stops make from doing stuff with a file called "clean" or "all"
 .PHONY: all clean run
+
+-include $(DEPS)
