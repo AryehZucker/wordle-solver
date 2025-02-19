@@ -5,6 +5,18 @@
 
 #include <bits/stdc++.h>
 
+Feedback::Feedback() : Feedback(10) {}
+
+Feedback::Feedback(int size)
+{
+    letter_data = new DataL[size];
+}
+
+Feedback::~Feedback()
+{
+    delete[] letter_data;
+}
+
 bool Feedback::operator==(const Feedback &other) const
 {
     if (letters != other.letters ||

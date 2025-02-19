@@ -13,7 +13,10 @@ struct DataL
 struct Feedback
 {
     int letters = 0, bad_letters = 0;
-    DataL letter_data[10];
+    DataL *letter_data;
+    Feedback(void);
+    Feedback(int size);
+    ~Feedback();
     bool operator==(const Feedback &other) const;
     Feedback operator+(const Feedback &other) const;
 };
