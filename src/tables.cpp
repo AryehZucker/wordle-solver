@@ -22,11 +22,6 @@
                       (eg: L='a', there's a green 'b' in the first spot)
 */
 
-/*Elims Tree structure/lookup:
- *	tree[data_size] points to a binary tree of hashed data and elims
- *If a data entry that you're looking for doesn't exist, create it.
- */
-
 #include "tables.hpp"
 #include "dictionary.hpp"
 #include "feedback.hpp"
@@ -75,8 +70,6 @@ void genData(const char *guess, const char *ans, Feedback &data){
 	static struct DataL letter_data[26];
 	struct DataL *ldataptr;
 	int guess_count, ans_count;
-
-	data.bad_letters = 0;
 
 	//initialize data to none
 	for(int i=0; i<26; i++){

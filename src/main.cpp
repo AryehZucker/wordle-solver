@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
 	//allot space to store the total eliminations and initialize to zero
 	total_eliminations = new double[words.guesses.len]();
 
-	std::cout << "Calculating eliminations...";
+	std::cout << "Calculating eliminations..." << std::endl;
 	calculateEliminations(total_eliminations);
 	std::cout << "Done" << std::endl;
 
@@ -61,16 +61,13 @@ int main(int argc, char *argv[]){
 
 
 void calculateEliminations(double *total_eliminations){
-	Feedback *data_table;
 	int eliminations;
-
-	std::cout << std::endl;
 
 	//initialize word-to-data table
 	initAnsToDataTable(words);
 	std::cout << "Answer to data table initialized." << std::endl;
 
-	data_table = new Feedback[words.guesses.len];
+	Feedback *data_table = new Feedback[words.guesses.len];
 	std::cout << "Data table initialized." << std::endl;
 
 	std::cout << "Beginning combinatorial calculations..." << std::endl;
