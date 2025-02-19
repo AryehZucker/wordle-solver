@@ -28,6 +28,7 @@
 #include "utils.hpp"
 
 #include <unordered_map>
+#include <vector>
 
 extern struct Dict words;
 struct DataA *answers_data;
@@ -59,13 +60,14 @@ void wordToData(const char *word, struct DataA *data){
 
 
 //generate a list of DataS, where the positions correspond to a word
-void genDataTable(const char *ans, struct WordList guesses, Feedback table[]){
+void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table){
 	for(int i=0; i < guesses.len; i++)
-		genData(getWord(i, guesses), ans, table[i]);
+		table.push_back(genData(getWord(i, guesses), ans));
 }
 
 //generate the data for the given guess and ans
-void genData(const char *guess, const char *ans, Feedback &data){
+Feedback genData(const char *guess, const char *ans){
+	Feedback data;
 	char letter;
 	static struct DataL letter_data[26];
 	struct DataL *ldataptr;
@@ -116,6 +118,8 @@ void genData(const char *guess, const char *ans, Feedback &data){
 	}
 
 	simplify(data.letter_data, weight(data.letters));
+
+	return data;
 }
 
 

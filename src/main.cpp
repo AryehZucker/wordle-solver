@@ -4,6 +4,7 @@
 #include "tables.hpp"
 
 #include <iostream>
+#include <vector>
 
 
 struct Dict words;
@@ -67,8 +68,8 @@ void calculateEliminations(double *total_eliminations){
 	initAnsToDataTable(words);
 	std::cout << "Answer to data table initialized." << std::endl;
 
-	Feedback *data_table = new Feedback[words.guesses.len];
-	std::cout << "Data table initialized." << std::endl;
+	std::vector<Feedback> data_table;
+	data_table.reserve(words.guesses.len);
 
 	std::cout << "Beginning combinatorial calculations..." << std::endl;
 	Logger logger(words);
@@ -84,8 +85,6 @@ void calculateEliminations(double *total_eliminations){
 			logger.displayProgress();
 		}
 	}
-
-	delete[] data_table;
 
 	std::cout << std::endl;
 }

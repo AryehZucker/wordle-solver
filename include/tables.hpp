@@ -4,6 +4,8 @@
 #include "dictionary.hpp"
 #include "feedback.hpp"
 
+#include <vector>
+
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
@@ -27,8 +29,8 @@ struct DataA {
 
 void wordToData(const char *word, struct DataA *data);
 
-void genDataTable(const char *ans, struct WordList guesses, Feedback table[]);
-void genData(const char *guess, const char *ans, Feedback &data);
+void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table);
+Feedback genData(const char *guess, const char *ans);
 
 int getElims(const Feedback &feedback);
 
