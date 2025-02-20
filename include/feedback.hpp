@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+struct DataA;
+
 // data on a letter
 struct DataL
 {
@@ -18,8 +20,11 @@ struct Feedback
     Feedback(const Feedback &f1, const Feedback &f2);
     ~Feedback();
     int size(void) const;
+    bool fits(const DataA &ans_data) const;
     bool operator==(const Feedback &other) const;
     Feedback operator+(const Feedback &other) const;
+private:
+    void simplify(void);
 };
 
 struct FeedbackHasher

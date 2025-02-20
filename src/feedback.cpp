@@ -59,12 +59,12 @@ Feedback::Feedback(const char *guess, const char *ans)
             letters |= 1 << i;
 
     letter_data = new DataL[size()];
-    struct DataL *ldataptr = letter_data;
+    struct DataL *letter_data_ptr = letter_data;
     for (int i = 0; i < 26; i++)
         if (all_letter_data[i].amount != 0)
-            *ldataptr++ = all_letter_data[i];
+            *letter_data_ptr++ = all_letter_data[i];
 
-    simplify(letter_data, size());
+    simplify();
 }
 
 Feedback::Feedback(const Feedback &f1, const Feedback &f2)
@@ -110,7 +110,7 @@ Feedback::Feedback(const Feedback &f1, const Feedback &f2)
         c_letters >>= 1;
     }
 
-    simplify(letter_data, size());
+    simplify();
 }
 
 Feedback::~Feedback()
@@ -118,9 +118,57 @@ Feedback::~Feedback()
     delete[] letter_data;
 }
 
-int Feedback::size(void) const
+int Feedback::size() const
 {
     return weight(letters);
+}
+
+bool Feedback::fits(const DataA &ans_data) const
+{
+    // test that the letters don't contradict
+    if (letters & ~ans_data.letters || bad_letters & ans_data.letters)
+        return false;
+
+    else
+    {
+        const struct DataL *gldp = letter_data; // pointer to the guess letter_data that we're upto
+        const struct DataLA *aldp = ans_data.letter_data; // pointer to the answer letter_data that we're upto
+
+        int guess_letters = letters,
+            ans_letters = ans_data.letters;
+
+        // loop through all the letters in guess data
+        while (guess_letters)
+        {
+            if (guess_letters & 1)
+            { // the bit for this letter is on, meaning there is data for this letter
+                // check amount
+                if (aldp->amount < (gldp->amount & ~CAPPED))
+                    return false;
+
+                // check capped
+                if (gldp->amount & CAPPED && aldp->amount != (gldp->amount & ~CAPPED))
+                    return false;
+
+                // check known_pos
+                if (~aldp->pos & gldp->known_pos)
+                    return false;
+
+                // check bad_pos
+                if (aldp->pos & ~gldp->bad_pos)
+                    return false;
+
+                gldp++, aldp++;
+            }
+            else if (ans_letters & 1) // the bit for this letter is on
+                aldp++;
+
+            guess_letters >>= 1;
+            ans_letters >>= 1;
+        }
+    }
+
+    return true;
 }
 
 bool Feedback::operator==(const Feedback &other) const
@@ -142,6 +190,73 @@ bool Feedback::operator==(const Feedback &other) const
 Feedback Feedback::operator+(const Feedback &other) const
 {
     return Feedback(*this, other);
+}
+
+void Feedback::simplify(void)
+{
+    const int data_len = size();
+    int i, changed, total_amount, taken = 0;
+
+    do
+    {
+        changed = 0;
+
+        // count total known letters
+        total_amount = 0;
+        for (i = 0; i < data_len; i++)
+            total_amount += letter_data[i].amount & ~CAPPED;
+
+        for (i = 0; i < data_len; i++)
+        {
+            // capped:3 & known_pos:2
+            if ((letter_data[i].amount & ~CAPPED) == (unsigned int)weight(letter_data[i].bad_pos))
+            {
+                if (!(letter_data[i].amount & CAPPED))
+                {
+                    letter_data[i].amount |= CAPPED;
+                    changed = 1;
+                }
+                if (letter_data[i].known_pos != letter_data[i].bad_pos)
+                {
+                    letter_data[i].known_pos = letter_data[i].bad_pos;
+                    changed = 1;
+                }
+            }
+            // capped:2
+            else if (total_amount == WORDLEN)
+            {
+                if (!(letter_data[i].amount & CAPPED))
+                {
+                    letter_data[i].amount |= CAPPED;
+                    changed = 1;
+                }
+            }
+
+            // bad_pos:2
+            if (letter_data[i].amount == (weight(letter_data[i].known_pos) | CAPPED))
+                if (letter_data[i].bad_pos != letter_data[i].known_pos)
+                {
+                    letter_data[i].bad_pos = letter_data[i].known_pos;
+                    changed = 1;
+                }
+
+            // mark all taken positions
+            taken |= letter_data[i].known_pos;
+        }
+
+        // bad_pos:3
+        for (int i = 0; i < data_len; i++)
+            if (letter_data[i].bad_pos & taken & ~letter_data[i].known_pos)
+            {
+                letter_data[i].bad_pos &= ~taken | letter_data[i].known_pos;
+                changed = 1;
+            }
+    } while (changed);
+
+    /*i choose not to draw inferences regarding the second instance of bad_pos:3
+     *this will not affect whether data fits a word (and so is of no concern),
+     *it will only affect considering data as equal
+     */
 }
 
 std::size_t FeedbackHasher::operator()(const Feedback &f) const

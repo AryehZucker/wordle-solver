@@ -77,7 +77,7 @@ void calculateEliminations(double *total_eliminations){
 		genDataTable(getWord(ans_index, words.answers), words.guesses, data_table);
 		for(int g1_index=0; g1_index < words.guesses.len-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < words.guesses.len; g2_index++){
-				eliminations = getElims(data_table[g1_index] + data_table[g2_index]);
+				eliminations = getEliminations(data_table[g1_index] + data_table[g2_index]);
 				total_eliminations[g1_index] += eliminations;
 				total_eliminations[g2_index] += eliminations;
 				logger.logCompletedIteration();

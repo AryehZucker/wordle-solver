@@ -2,7 +2,6 @@
 #define TABLES_H
 
 #include "dictionary.hpp"
-#include "feedback.hpp"
 
 #include <vector>
 
@@ -12,8 +11,7 @@
 #define CAPPED 010U
 #define EMPTY (-1)
 
-struct WordList;
-struct Dict;
+struct Feedback;
 
 //data on a letter for DataA
 struct DataLA {
@@ -31,13 +29,10 @@ void wordToData(const char *word, struct DataA *data);
 
 void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table);
 
-int getElims(const Feedback &feedback);
+int getEliminations(const Feedback &feedback);
 
 void initAnsToDataTable(struct Dict words);
 void delAnsToDataTable(void);
-int countElims(const Feedback &feedback);
-int fits(const Feedback &feedback, const struct DataA *ans_data);
-
-void simplify(struct DataL *letter_data, const int data_len);
+int countEliminations(const Feedback &feedback);
 
 #endif
