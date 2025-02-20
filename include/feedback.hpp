@@ -17,6 +17,7 @@ struct Feedback
     Feedback(const char *guess, const char *ans);
     Feedback(const Feedback &f1, const Feedback &f2);
     ~Feedback();
+    int size(void) const;
     bool operator==(const Feedback &other) const;
     Feedback operator+(const Feedback &other) const;
 };

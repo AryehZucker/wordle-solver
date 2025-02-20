@@ -58,13 +58,13 @@ Feedback::Feedback(const char *guess, const char *ans)
         if (all_letter_data[i].amount != 0)
             letters |= 1 << i;
 
-    letter_data = new DataL[weight(letters)];
+    letter_data = new DataL[size()];
     struct DataL *ldataptr = letter_data;
     for (int i = 0; i < 26; i++)
         if (all_letter_data[i].amount != 0)
             *ldataptr++ = all_letter_data[i];
 
-    simplify(letter_data, weight(letters));
+    simplify(letter_data, size());
 }
 
 Feedback::Feedback(const Feedback &f1, const Feedback &f2)
@@ -74,12 +74,11 @@ Feedback::Feedback(const Feedback &f1, const Feedback &f2)
     struct DataL *combo_ldp;
     const struct DataL *d1_ldp, *d2_ldp;
     
-    int size = weight(f1.letters | f2.letters);
-    letter_data = new DataL[size];
-
     // combine good and bad letters
     letters = f1.letters | f2.letters;
     bad_letters = f1.bad_letters | f2.bad_letters;
+    
+    letter_data = new DataL[size()];
 
     // keep track of which good letters are in which data
     d1_letters = f1.letters & ~f2.letters; // letters only found in f1
@@ -111,7 +110,7 @@ Feedback::Feedback(const Feedback &f1, const Feedback &f2)
         c_letters >>= 1;
     }
 
-    simplify(letter_data, weight(letters));
+    simplify(letter_data, size());
 }
 
 Feedback::~Feedback()
@@ -119,14 +118,19 @@ Feedback::~Feedback()
     delete[] letter_data;
 }
 
+int Feedback::size(void) const
+{
+    return weight(letters);
+}
+
 bool Feedback::operator==(const Feedback &other) const
 {
     if (letters != other.letters ||
             bad_letters != other.bad_letters ||
-            weight(letters) != weight(other.letters))
+            size() != other.size())
         return false;
 
-    for (int i = 0; i < weight(letters); i++)
+    for (int i = 0; i < size(); i++)
         if (letter_data[i].amount != other.letter_data[i].amount ||
                 letter_data[i].known_pos != other.letter_data[i].known_pos ||
                 letter_data[i].bad_pos != other.letter_data[i].bad_pos)
@@ -148,7 +152,7 @@ std::size_t FeedbackHasher::operator()(const Feedback &f) const
     std::size_t hash = 17;
     hash = hash * 31 + int_hasher(f.letters);
     hash = hash * 31 + int_hasher(f.bad_letters);
-    for (int i = 0; i < weight(f.letters); i++)
+    for (int i = 0; i < f.size(); i++)
     {
         hash = hash * 31 + char_hasher(f.letter_data[i].amount);
         hash = hash * 31 + char_hasher(f.letter_data[i].known_pos);
