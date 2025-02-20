@@ -30,7 +30,6 @@ struct DataA {
 void wordToData(const char *word, struct DataA *data);
 
 void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table);
-Feedback genData(const char *guess, const char *ans);
 
 int getElims(const Feedback &feedback);
 

@@ -14,8 +14,8 @@ struct Feedback
 {
     int letters = 0, bad_letters = 0;
     DataL *letter_data;
-    Feedback(void);
-    Feedback(int size);
+    Feedback(const char *guess, const char *ans);
+    Feedback(const Feedback &f1, const Feedback &f2);
     ~Feedback();
     bool operator==(const Feedback &other) const;
     Feedback operator+(const Feedback &other) const;

@@ -62,66 +62,8 @@ void wordToData(const char *word, struct DataA *data){
 //generate a list of DataS, where the positions correspond to a word
 void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table){
 	for(int i=0; i < guesses.len; i++)
-		table.push_back(genData(getWord(i, guesses), ans));
+		table.emplace_back(getWord(i, guesses), ans);
 }
-
-//generate the data for the given guess and ans
-Feedback genData(const char *guess, const char *ans){
-	Feedback data;
-	char letter;
-	static struct DataL letter_data[26];
-	struct DataL *ldataptr;
-	int guess_count, ans_count;
-
-	//initialize data to none
-	for(int i=0; i<26; i++){
-		letter_data[i].amount = letter_data[i].known_pos = 0;
-		letter_data[i].bad_pos = 0x1F;
-	}
-
-	for(int i=0; i<WORDLEN; i++){
-		//find all "known_pos"
-		if((letter = guess[i]) == ans[i])
-			letter_data[letter-'a'].known_pos |= 1<<i; //turn on the i-th bit
-
-		//find all "bad_pos"
-		else
-			letter_data[letter-'a'].bad_pos &= ~(1<<i); //turn off the i-th bit
-	}
-
-	for(int i=0; i<26; i++){
-		//count how many letter "i"s are in guess and answer
-		guess_count = ans_count = 0;
-		for(int j=0; j<WORDLEN; j++){
-			if(guess[j] == ('a'+i)) guess_count++;
-			if(  ans[j] == ('a'+i))   ans_count++;
-		}
-
-		//find "amount"
-		letter_data[i].amount = MIN(guess_count, ans_count);
-		//find "capped"
-		if(guess_count > letter_data[i].amount){
-			if(ans_count == 0)	//the letter is not in the ans
-				data.bad_letters |= 1<<i;
-			else letter_data[i].amount |= CAPPED;
-		}
-	}
-
-	//load all non-empty data into "data"
-	data.letters = 0;
-	ldataptr = data.letter_data;
-	for(int i=0; i<26; i++){
-		if(letter_data[i].amount != 0){
-			data.letters |= 1<<i;
-			*ldataptr++ = letter_data[i];
-		}
-	}
-
-	simplify(data.letter_data, weight(data.letters));
-
-	return data;
-}
-
 
 int getElims(const Feedback &feedback){
 	static std::unordered_map<Feedback, int, FeedbackHasher> cache;
