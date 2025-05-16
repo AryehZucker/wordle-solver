@@ -5,11 +5,11 @@
 
 #include "dictionary.hpp"
 
-Logger::Logger(struct Dict &words)
+Logger::Logger(const Dict &answers, const Dict &guesses)
 {
-    total_iterations = (long long)words.answers.len * words.guesses.len * (words.guesses.len - 1) / 2;
+    total_iterations = (long long)answers.getLength() * guesses.getLength() * (guesses.getLength() - 1) / 2;
 
-    std::cout << words.answers.len << " answers\t" << words.guesses.len << " guesses" << std::endl;
+    std::cout << answers.getLength() << " answers\t" << guesses.getLength() << " guesses" << std::endl;
     std::cout << "Total iterations: " << total_iterations << std::endl;
 }
 

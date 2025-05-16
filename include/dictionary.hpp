@@ -3,18 +3,15 @@
 
 #define WORDLEN 5
 
-struct WordList {
+class Dict {
+private:
 	char *words;
 	int len;
+public:
+	Dict(const char *path);
+	~Dict();
+	int getLength() const;
+	const char *getWord(int index) const;
 };
-
-struct Dict {
-	struct WordList answers;
-	struct WordList guesses;
-};
-
-void loadDict(const char *ans_words_path, const char *guess_words_path, struct Dict &words);
-struct WordList loadWordList(const char *path);
-char *getWord(int index, struct WordList wl);
 
 #endif
