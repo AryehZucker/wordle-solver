@@ -30,7 +30,6 @@
 #include <unordered_map>
 #include <vector>
 
-extern struct Dict words;
 struct DataA *answers_data;
 
 void wordToData(const char *word, struct DataA *data){
@@ -59,9 +58,9 @@ void wordToData(const char *word, struct DataA *data){
 
 
 //generate a list of DataS, where the positions correspond to a word
-void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table){
-	for(int i=0; i < guesses.len; i++)
-		table.emplace_back(getWord(i, guesses), ans);
+void genDataTable(const char *ans, const Dict &guesses, std::vector<Feedback> &table){
+	for(int i=0; i < guesses.getLength(); i++)
+		table.emplace_back(guesses.getWord(i), ans);
 }
 
 int getEliminations(const Feedback &feedback){
@@ -74,11 +73,11 @@ int getEliminations(const Feedback &feedback){
 }
 
 
-void initAnsToDataTable(struct Dict words){
-	answers_data = new struct DataA[words.answers.len+1];
-	for(int i=0; i<words.answers.len; i++)
-		wordToData(getWord(i, words.answers), &answers_data[i]);
-	answers_data[words.answers.len].letters = 0;
+void initAnsToDataTable(const Dict &answers){
+	answers_data = new struct DataA[answers.getLength()+1];
+	for(int i=0; i<answers.getLength(); i++)
+		wordToData(answers.getWord(i), &answers_data[i]);
+	answers_data[answers.getLength()].letters = 0;
 }
 
 void delAnsToDataTable(){

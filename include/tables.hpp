@@ -27,11 +27,11 @@ struct DataA {
 
 void wordToData(const char *word, struct DataA *data);
 
-void genDataTable(const char *ans, struct WordList guesses, std::vector<Feedback> &table);
+void genDataTable(const char *ans, const Dict &guesses, std::vector<Feedback> &table);
 
 int getEliminations(const Feedback &feedback);
 
-void initAnsToDataTable(struct Dict words);
+void initAnsToDataTable(const Dict &answers);
 void delAnsToDataTable(void);
 int countEliminations(const Feedback &feedback);
 
