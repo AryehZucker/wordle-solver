@@ -30,9 +30,7 @@
 #include <unordered_map>
 #include <vector>
 
-struct DataA *answers_data;
-
-void wordToData(const char *word, struct DataA *data){
+void EliminationsCounter::wordToData(const char *word, struct DataA *data){
 	static struct DataLA letter_data[26];
 
 	//initialize data to none
@@ -63,7 +61,7 @@ void genDataTable(const char *ans, const Dict &guesses, std::vector<Feedback> &t
 		table.emplace_back(guesses.getWord(i), ans);
 }
 
-int getEliminations(const Feedback &feedback){
+int EliminationsCounter::getEliminations(const Feedback &feedback){
 	static std::unordered_map<Feedback, int, FeedbackHasher> cache;
 
 	if (cache.find(feedback) != cache.end())
@@ -73,18 +71,18 @@ int getEliminations(const Feedback &feedback){
 }
 
 
-void initAnsToDataTable(const Dict &answers){
+EliminationsCounter::EliminationsCounter(const Dict &answers){
 	answers_data = new struct DataA[answers.getLength()+1];
 	for(int i=0; i<answers.getLength(); i++)
 		wordToData(answers.getWord(i), &answers_data[i]);
 	answers_data[answers.getLength()].letters = 0;
 }
 
-void delAnsToDataTable(){
+EliminationsCounter::~EliminationsCounter(){
 	delete answers_data;
 }
 
-int countEliminations(const Feedback &feedback){
+int EliminationsCounter::countEliminations(const Feedback &feedback){
 	struct DataA *ans_data = answers_data;
 	int eliminations = 0;
 	while(ans_data->letters){

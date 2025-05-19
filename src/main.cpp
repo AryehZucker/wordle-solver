@@ -52,7 +52,6 @@ int main(int argc, char *argv[]){
 	}
 
 	delete[] total_eliminations;
-	delAnsToDataTable();
 
 	return 0;
 }
@@ -63,9 +62,7 @@ int main(int argc, char *argv[]){
 void calculateEliminations(const Dict &answers, const Dict &guesses, double *total_eliminations){
 	int eliminations;
 
-	//initialize word-to-data table
-	initAnsToDataTable(answers);
-	std::cout << "Answer to data table initialized." << std::endl;
+	EliminationsCounter eliminationsCounter(answers);
 
 	std::vector<Feedback> data_table;
 	data_table.reserve(guesses.getLength());
@@ -76,7 +73,7 @@ void calculateEliminations(const Dict &answers, const Dict &guesses, double *tot
 		genDataTable(answers.getWord(ans_index), guesses, data_table);
 		for(int g1_index=0; g1_index < guesses.getLength()-1; g1_index++){
 			for(int g2_index=g1_index+1; g2_index < guesses.getLength(); g2_index++){
-				eliminations = getEliminations(data_table[g1_index] + data_table[g2_index]);
+				eliminations = eliminationsCounter.getEliminations(data_table[g1_index] + data_table[g2_index]);
 				total_eliminations[g1_index] += eliminations;
 				total_eliminations[g2_index] += eliminations;
 				logger.logCompletedIteration();

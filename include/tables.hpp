@@ -25,14 +25,19 @@ struct DataA {
 	struct DataLA letter_data[WORDLEN];
 };
 
-void wordToData(const char *word, struct DataA *data);
 
 void genDataTable(const char *ans, const Dict &guesses, std::vector<Feedback> &table);
 
-int getEliminations(const Feedback &feedback);
-
-void initAnsToDataTable(const Dict &answers);
-void delAnsToDataTable(void);
-int countEliminations(const Feedback &feedback);
+class EliminationsCounter
+{
+private:
+	struct DataA *answers_data;
+	int countEliminations(const Feedback &feedback);
+	void wordToData(const char *word, struct DataA *data);
+public:
+	int getEliminations(const Feedback &feedback);
+	EliminationsCounter(const Dict &answers);
+	~EliminationsCounter();
+};
 
 #endif
